@@ -1,35 +1,15 @@
 package com.example.watchlist
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.watchlist.ui.theme.WatchListTheme
-
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            WatchListTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    LoginScreen()
-                }
-            }
-        }
-    }
-}
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(onLoginSuccess: () -> Unit = {}) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -72,8 +52,7 @@ fun LoginScreen() {
         Button(
             onClick = {
                 if (email == "admin@example.com" && password == "1234") {
-                    errorMessage = null
-                    println("Login successful!")
+                    onLoginSuccess()
                 } else {
                     errorMessage = "Invalid email or password"
                 }
@@ -85,10 +64,4 @@ fun LoginScreen() {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun LoginScreenPreview() {
-    WatchListTheme {
-        LoginScreen()
-    }
-}
+
