@@ -1,6 +1,7 @@
 package com.example.watchlist
 
 import android.util.Patterns
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.background
@@ -15,14 +16,15 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 fun isValidEmail(email: String): Boolean {
     return Patterns.EMAIL_ADDRESS.matcher(email).matches()
@@ -35,6 +37,7 @@ fun LoginScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     var isPasswordVisible by remember { mutableStateOf(false) }
     var showContent by remember { mutableStateOf(false) }
 
@@ -45,6 +48,8 @@ fun LoginScreen(
     val isEmailValid = email.isEmpty() || isValidEmail(email)
     val isPasswordValid = password.isEmpty() || password.length >= 6
     val canLogin = isValidEmail(email) && password.length >= 6
+    val context = LocalContext.current
+    val authViewModel: AuthViewModel = viewModel()
 
     Box(
         modifier = Modifier
@@ -136,17 +141,33 @@ fun LoginScreen(
                             )
                         }
 
+                        errorMessage?.let {
+                            Text(
+                                text = it,
+                                color = MaterialTheme.colorScheme.error,
+                                fontSize = 12.sp
+                            )
+                        }
+
                         Button(
                             onClick = {
-                                onLoginSuccess()
+                                authViewModel.loginUser(
+                                    email = email,
+                                    password = password,
+                                    onSuccess = {
+                                        errorMessage = null
+                                        Toast.makeText(context, "Login successful!", Toast.LENGTH_SHORT).show()
+                                        onLoginSuccess()
+                                    },
+                                    onError = { error ->
+                                        errorMessage = error
+                                    }
+                                )
                             },
                             enabled = canLogin,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp),
-                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = if (canLogin) MaterialTheme.colorScheme.primary else Color.Gray,
+                                containerColor = MaterialTheme.colorScheme.primary,
                                 contentColor = MaterialTheme.colorScheme.onPrimary
                             )
                         ) {

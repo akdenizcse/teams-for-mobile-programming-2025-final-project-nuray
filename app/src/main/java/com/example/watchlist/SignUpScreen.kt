@@ -1,6 +1,7 @@
 package com.example.watchlist
 
 import android.util.Patterns
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,11 +16,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 fun isStrongPassword(password: String): Boolean {
     val uppercase = Regex("[A-Z]")
@@ -35,6 +38,9 @@ fun isStrongPassword(password: String): Boolean {
 fun SignUpScreen(
     onBackClick: () -> Unit = {}
 ) {
+    val authViewModel: AuthViewModel = viewModel()
+    val context = LocalContext.current
+
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -68,7 +74,7 @@ fun SignUpScreen(
         ) {
             IconButton(onClick = { onBackClick() }, modifier = Modifier.align(Alignment.Start)) {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack,
+                    imageVector = Icons.Filled.ArrowBack,
                     contentDescription = "Back",
                     tint = MaterialTheme.colorScheme.primary
                 )
@@ -185,7 +191,17 @@ fun SignUpScreen(
 
                     Button(
                         onClick = {
-                            println("User Registered: $firstName $lastName - $email")
+                            authViewModel.registerUser(
+                                email = email,
+                                password = password,
+                                onSuccess = {
+                                    Toast.makeText(context, "Sign up successful!", Toast.LENGTH_SHORT).show()
+                                    onBackClick()
+                                },
+                                onError = { error ->
+                                    Toast.makeText(context, "Error: $error", Toast.LENGTH_LONG).show()
+                                }
+                            )
                         },
                         enabled = canRegister,
                         modifier = Modifier
