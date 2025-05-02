@@ -17,8 +17,19 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+
+fun isStrongPassword(password: String): Boolean {
+    val uppercase = Regex("[A-Z]")
+    val lowercase = Regex("[a-z]")
+    val specialChar = Regex("[^A-Za-z0-9]")
+    return password.length >= 6 &&
+            password.contains(uppercase) &&
+            password.contains(lowercase) &&
+            password.contains(specialChar)
+}
 
 @Composable
 fun SignUpScreen(
@@ -35,12 +46,12 @@ fun SignUpScreen(
     val isFirstNameValid = firstName.isNotBlank()
     val isLastNameValid = lastName.isNotBlank()
     val isEmailValid = email.isEmpty() || Patterns.EMAIL_ADDRESS.matcher(email).matches()
-    val isPasswordValid = password.isEmpty() || password.length >= 6
+    val isPasswordValid = password.isEmpty() || isStrongPassword(password)
     val isPasswordConfirmed = confirmPassword.isEmpty() || password == confirmPassword
 
     val canRegister = isFirstNameValid && isLastNameValid &&
             Patterns.EMAIL_ADDRESS.matcher(email).matches() &&
-            password.length >= 6 &&
+            isStrongPassword(password) &&
             password == confirmPassword
 
     Box(
@@ -139,7 +150,7 @@ fun SignUpScreen(
 
                     if (!isPasswordValid && password.isNotEmpty()) {
                         Text(
-                            text = "Password must be at least 6 characters",
+                            text = "Password must be 6+ chars, 1 uppercase, 1 lowercase, 1 symbol",
                             color = MaterialTheme.colorScheme.error,
                             fontSize = 12.sp
                         )
@@ -190,6 +201,18 @@ fun SignUpScreen(
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Already have an account? Login",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .clickable { onBackClick() },
+                textAlign = TextAlign.Center
+            )
         }
     }
 }

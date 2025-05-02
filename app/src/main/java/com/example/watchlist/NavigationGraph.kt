@@ -9,12 +9,18 @@ import androidx.navigation.compose.composable
 fun NavigationGraph(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "login") {
         composable("login") {
-            LoginScreen(onSignUpClick = {
-                navController.navigate("signup")
-            })
+            LoginScreen(
+                onSignUpClick = {
+                    navController.navigate("signup")
+                }
+            )
         }
         composable("signup") {
-            SignUpScreen()
+            SignUpScreen(
+                onBackClick = {
+                    navController.popBackStack() // Giriş ekranına döner
+                }
+            )
         }
     }
 }
