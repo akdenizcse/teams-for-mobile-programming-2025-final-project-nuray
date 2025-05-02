@@ -10,17 +10,27 @@ fun NavigationGraph(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "login") {
         composable("login") {
             LoginScreen(
+                onLoginSuccess = {
+                    navController.navigate("home") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                },
                 onSignUpClick = {
                     navController.navigate("signup")
                 }
             )
         }
+
         composable("signup") {
             SignUpScreen(
                 onBackClick = {
-                    navController.popBackStack() // Giriş ekranına döner
+                    navController.popBackStack()
                 }
             )
+        }
+
+        composable("home") {
+            HomeScreen()
         }
     }
 }

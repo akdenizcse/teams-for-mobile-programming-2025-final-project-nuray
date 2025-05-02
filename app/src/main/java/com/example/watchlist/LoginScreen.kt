@@ -157,10 +157,10 @@ fun LoginScreen(
                                     onSuccess = {
                                         errorMessage = null
                                         Toast.makeText(context, "Login successful!", Toast.LENGTH_SHORT).show()
-                                        onLoginSuccess()
+                                        onLoginSuccess() // Giriş başarılıysa ana sayfaya yönlendir
                                     },
-                                    onError = { error ->
-                                        errorMessage = error
+                                    onError = {
+                                        errorMessage = "Invalid email or password"
                                     }
                                 )
                             },
