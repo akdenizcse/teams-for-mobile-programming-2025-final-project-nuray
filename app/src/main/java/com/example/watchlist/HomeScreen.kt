@@ -129,6 +129,7 @@ fun MovieCard(movie: MovieItem, movieViewModel: MovieViewModel) {
                         imageVector = if (isInWatchlist) Icons.Filled.Check else Icons.Filled.Add,
                         contentDescription = "Watchlist",
                         tint = if (isInWatchlist) MaterialTheme.colorScheme.primary else Color.Gray
+
                     )
                 }
             }
