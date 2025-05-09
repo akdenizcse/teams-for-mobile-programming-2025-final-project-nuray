@@ -3,12 +3,12 @@ package com.example.watchlist.model
 import com.google.gson.annotations.SerializedName
 
 data class MovieItem(
-    @SerializedName("id") val id: Int,
-    @SerializedName("title") val title: String,
-    @SerializedName("release_date") val releaseDate: String,
-    @SerializedName("poster_path") val posterUrl: String?,
-    @SerializedName("vote_average") val rating: Float,
-    @SerializedName("genre_ids") val genreIds: List<Int>
+    @SerializedName("id") val id: String,
+    @SerializedName("title") val title: String = "",
+    @SerializedName("release_date") val releaseDate: String = "",
+    @SerializedName("vote_average") val rating: Double = 0.0,
+    @SerializedName("poster_path") val posterUrl: String = "",
+    @SerializedName("genre_ids") val genreIds: List<Int> = emptyList()
 ) {
     fun getGenreNames(): String {
         val genreMap = mapOf(
@@ -26,7 +26,7 @@ data class MovieItem(
             10402 to "Music",
             9648 to "Mystery",
             10749 to "Romance",
-            878 to "Science Fiction",
+            878 to "Sci-Fi",
             10770 to "TV Movie",
             53 to "Thriller",
             10752 to "War",
