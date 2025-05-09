@@ -1,104 +1,60 @@
 package com.example.watchlist.viewmodel
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.watchlist.model.MovieItem
+import com.example.watchlist.model.MovieResponse
 import com.example.watchlist.network.RetrofitClient
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 class MovieViewModel : ViewModel() {
+    var movies by mutableStateOf<List<MovieItem>>(emptyList())
+    var searchQuery by mutableStateOf("")
+    var currentPage by mutableIntStateOf(1)
+    var totalPages by mutableIntStateOf(1)
+    var error by mutableStateOf<String?>(null)
 
-    var movies = mutableStateOf<List<MovieItem>>(emptyList())
-    var searchQuery = mutableStateOf("")
-    var error = mutableStateOf<String?>(null)
-
-    private val firestore = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
+    private val apiKey = "8a0e3d26a508195b8b070d519d3ad671"
 
     init {
-        getPopularMovies()
+        fetchPopular(1)
+    }
+
+    private fun fetchPopular(page: Int) {
+        viewModelScope.launch {
+            try {
+                val response: MovieResponse =
+                    RetrofitClient.api.getPopularMovies(apiKey = apiKey, page = page)
+                movies = response.results
+                currentPage = response.page
+                totalPages = response.total_pages
+                error = null
+            } catch (e: Exception) {
+                error = e.localizedMessage
+            }
+        }
+    }
+
+    fun nextPage() {
+        if (currentPage < totalPages) fetchPopular(currentPage + 1)
+    }
+
+    fun prevPage() {
+        if (currentPage > 1) fetchPopular(currentPage - 1)
     }
 
     fun updateSearchQuery(query: String) {
-        searchQuery.value = query
-        if (query.isBlank()) getPopularMovies() else searchMovie(query)
+        searchQuery = query
+        fetchPopular(1)
     }
 
-    private fun getPopularMovies() {
-        viewModelScope.launch {
-            try {
-                val response = RetrofitClient.api.getPopularMovies("8a0e3d26a508195b8b070d519d3ad671")
-                movies.value = response.results
-                error.value = null
-            } catch (e: Exception) {
-                error.value = e.localizedMessage
-            }
-        }
-    }
-
-    private fun searchMovie(title: String) {
-        viewModelScope.launch {
-            try {
-                val response = RetrofitClient.api.searchMovies("8a0e3d26a508195b8b070d519d3ad671", title)
-                movies.value = response.results
-                error.value = null
-            } catch (e: Exception) {
-                error.value = e.localizedMessage
-            }
-        }
-    }
-
-    fun toggleFavorite(movie: MovieItem, isFavorite: Boolean) {
-        val userId = auth.currentUser?.uid ?: return
-        val docRef = firestore.collection("users")
-            .document(userId)
-            .collection("favorites")
-            .document(movie.id.toString())
-
-        if (isFavorite) {
-            docRef.set(movie)
-        } else {
-            docRef.delete()
-        }
-    }
-
-    fun toggleWatchlist(movie: MovieItem, isInWatchlist: Boolean) {
-        val userId = auth.currentUser?.uid ?: return
-        val docRef = firestore.collection("users")
-            .document(userId)
-            .collection("watchlist")
-            .document(movie.id.toString())
-
-        if (isInWatchlist) {
-            docRef.set(movie)
-        } else {
-            docRef.delete()
-        }
-    }
-
-    suspend fun isMovieFavorite(movieId: Int): Boolean {
-        val userId = auth.currentUser?.uid ?: return false
-        val doc = firestore.collection("users")
-            .document(userId)
-            .collection("favorites")
-            .document(movieId.toString())
-            .get()
-            .await()
-        return doc.exists()
-    }
-
-    suspend fun isMovieInWatchlist(movieId: Int): Boolean {
-        val userId = auth.currentUser?.uid ?: return false
-        val doc = firestore.collection("users")
-            .document(userId)
-            .collection("watchlist")
-            .document(movieId.toString())
-            .get()
-            .await()
-        return doc.exists()
-    }
+    // Placeholder implementations for favorites/watchlist
+    fun isMovieFavorite(id: String): Boolean = false
+    fun isMovieInWatchlist(id: String): Boolean = false
+    fun toggleFavorite(movie: MovieItem, fav: Boolean) {}
+    fun toggleWatchlist(movie: MovieItem, watch: Boolean) {}
 }
