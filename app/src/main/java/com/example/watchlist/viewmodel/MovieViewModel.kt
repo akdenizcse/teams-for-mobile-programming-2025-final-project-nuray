@@ -1,60 +1,85 @@
+// viewmodel/MovieViewModel.kt
 package com.example.watchlist.viewmodel
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.watchlist.model.MovieItem
-import com.example.watchlist.model.MovieResponse
 import com.example.watchlist.network.RetrofitClient
 import kotlinx.coroutines.launch
 
 class MovieViewModel : ViewModel() {
-    var movies by mutableStateOf<List<MovieItem>>(emptyList())
-    var searchQuery by mutableStateOf("")
-    var currentPage by mutableIntStateOf(1)
-    var totalPages by mutableIntStateOf(1)
-    var error by mutableStateOf<String?>(null)
+    var movies             by mutableStateOf<List<MovieItem>>(emptyList()); private set
+    var searchQuery        by mutableStateOf("");                                 private set
+    var currentPage        by mutableStateOf(1);                                  private set
+    var totalPages         by mutableStateOf(1);                                  private set
+
+    var selectedGenre      by mutableStateOf<String?>(null)
+    var selectedStartYear  by mutableStateOf<String?>(null)
+    var selectedEndYear    by mutableStateOf<String?>(null)
+    var selectedMinRating  by mutableStateOf<Double?>(null)
+    var selectedMaxRating  by mutableStateOf<Double?>(null)
 
     private val apiKey = "8a0e3d26a508195b8b070d519d3ad671"
+    private val genreMap = mapOf(
+        "Action" to "28",
+        "Drama"  to "18",
+        "Comedy" to "35",
+        "Sci-Fi" to "878"
+    )
 
     init {
-        fetchPopular(1)
+        loadPage(1)
     }
 
-    private fun fetchPopular(page: Int) {
-        viewModelScope.launch {
-            try {
-                val response: MovieResponse =
-                    RetrofitClient.api.getPopularMovies(apiKey = apiKey, page = page)
-                movies = response.results
-                currentPage = response.page
-                totalPages = response.total_pages
-                error = null
-            } catch (e: Exception) {
-                error = e.localizedMessage
-            }
-        }
+    fun searchMovies(query: String) {
+        searchQuery = query
+        loadPage(1, search = query.ifBlank { null })
+    }
+
+    fun applyFilters() {
+        loadPage(1, search = searchQuery.ifBlank { null })
     }
 
     fun nextPage() {
-        if (currentPage < totalPages) fetchPopular(currentPage + 1)
+        if (currentPage < totalPages) loadPage(currentPage + 1, search = searchQuery.ifBlank { null })
     }
 
     fun prevPage() {
-        if (currentPage > 1) fetchPopular(currentPage - 1)
+        if (currentPage > 1) loadPage(currentPage - 1, search = searchQuery.ifBlank { null })
     }
 
-    fun updateSearchQuery(query: String) {
-        searchQuery = query
-        fetchPopular(1)
+    private fun loadPage(page: Int, search: String? = null) {
+        viewModelScope.launch {
+            try {
+                val resp = if (search.isNullOrBlank()) {
+                    RetrofitClient.api.discoverMovies(
+                        apiKey           = apiKey,
+                        genreIds         = selectedGenre?.let { genreMap[it] },
+                        releaseDateGte   = selectedStartYear?.let { "$it-01-01" },
+                        releaseDateLte   = selectedEndYear  ?.let { "$it-12-31" },
+                        voteAverageGte   = selectedMinRating,
+                        voteAverageLte   = selectedMaxRating,
+                        page             = page
+                    )
+                } else {
+                    RetrofitClient.api.searchMovies(
+                        apiKey = apiKey,
+                        query  = search,
+                        page   = page
+                    )
+                }
+                movies      = resp.results
+                currentPage = resp.page
+                totalPages  = resp.total_pages
+            } catch (_: Exception) { }
+        }
     }
 
-    // Placeholder implementations for favorites/watchlist
-    fun isMovieFavorite(id: String): Boolean = false
-    fun isMovieInWatchlist(id: String): Boolean = false
-    fun toggleFavorite(movie: MovieItem, fav: Boolean) {}
-    fun toggleWatchlist(movie: MovieItem, watch: Boolean) {}
+    fun isMovieFavorite(movieId: String) = false
+    fun isMovieInWatchlist(movieId: String) = false
+    fun toggleFavorite(movie: MovieItem, fav: Boolean) { }
+    fun toggleWatchlist(movie: MovieItem, watch: Boolean) { }
 }

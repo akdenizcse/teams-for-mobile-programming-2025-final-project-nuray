@@ -1,31 +1,26 @@
+// network/MovieApi.kt
 package com.example.watchlist.network
 
-import com.example.watchlist.model.MovieItem
-import com.example.watchlist.model.MovieResponse
+import com.example.watchlist.network.DiscoverResponse
 import retrofit2.http.GET
-import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface MovieApi {
-    @GET("movie/popular")
-    suspend fun getPopularMovies(
+    @GET("discover/movie")
+    suspend fun discoverMovies(
         @Query("api_key") apiKey: String,
-        @Query("language") language: String = "en-US",
-        @Query("page") page: Int = 1
-    ): MovieResponse
+        @Query("with_genres") genreIds: String?,
+        @Query("primary_release_date.gte") releaseDateGte: String?,
+        @Query("primary_release_date.lte") releaseDateLte: String?,
+        @Query("vote_average.gte") voteAverageGte: Double?,
+        @Query("vote_average.lte") voteAverageLte: Double?,
+        @Query("page") page: Int
+    ): DiscoverResponse
 
     @GET("search/movie")
     suspend fun searchMovies(
         @Query("api_key") apiKey: String,
         @Query("query") query: String,
-        @Query("language") language: String = "en-US",
-        @Query("page") page: Int = 1
-    ): MovieResponse
-
-    @GET("movie/{movie_id}")
-    suspend fun getMovieDetails(
-        @Path("movie_id") movieId: Int,
-        @Query("api_key") apiKey: String,
-        @Query("language") language: String = "en-US"
-    ): MovieItem
+        @Query("page") page: Int
+    ): DiscoverResponse
 }
