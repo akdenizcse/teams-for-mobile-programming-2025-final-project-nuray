@@ -20,7 +20,6 @@ fun NavigationGraph(navController: NavHostController) {
                 }
             )
         }
-
         composable("signup") {
             SignUpScreen(
                 onBackClick = {
@@ -28,9 +27,8 @@ fun NavigationGraph(navController: NavHostController) {
                 }
             )
         }
-
         composable("home") {
-            HomeScreen()
+            HomeScreen(navController)
         }
     }
 }

@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">WatchList</string>
+    <string name="cd_search">Search</string>
+    <string name="cd_filter">Filter</string>
+    <string name="hint_search">Type to search…</string>
+    <string name="label_genre">Genre</string>
+    <string name="label_year">Year</string>
+    <string name="label_rating">Rating</string>
+    <string name="cd_previous">Previous page</string>
+    <string name="cd_next">Next page</string>
+    <string name="page_label">Page %1$d of %2$d</string>
+    <string name="cd_favorite">Toggle favorite</string>
+    <string name="cd_watchlist">Toggle watchlist</string>
 </resources>

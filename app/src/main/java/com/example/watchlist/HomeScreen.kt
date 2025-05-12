@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,40 +21,40 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.watchlist.model.MovieItem
 import com.example.watchlist.viewmodel.MovieViewModel
 import kotlinx.coroutines.launch
 
+private val DarkNavy       = Color(0xFF0A1D37)
+private val LightGrayBlue  = Color(0xFFA5ABBD)
+private val MediumGrayBlue = Color(0xFF717788)
+private val BorderGray     = Color(0xFFCCCCCC)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    navController: NavHostController,
     movieViewModel: MovieViewModel = viewModel()
 ) {
     var showSearch  by rememberSaveable { mutableStateOf(false) }
@@ -72,159 +73,163 @@ fun HomeScreen(
     val scrollState = rememberScrollState()
     val scope       = rememberCoroutineScope()
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp)
-    ) {
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
+    Scaffold(
+        containerColor = DarkNavy,
+        bottomBar      = { BottomBar(navController) }
+    ) { padding ->
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .background(DarkNavy)
+                .padding(16.dp)
         ) {
-            IconButton(onClick = { showSearch = !showSearch }) {
-                Icon(Icons.Filled.Search, contentDescription = "Search")
+            // Search & filter icons
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                IconButton(onClick = { showSearch = !showSearch }) {
+                    Icon(Icons.Filled.Search, contentDescription = "Search", tint = LightGrayBlue)
+                }
+                IconButton(onClick = { showFilters = !showFilters }) {
+                    Icon(Icons.Filled.FilterList, contentDescription = "Filters", tint = LightGrayBlue)
+                }
             }
-            IconButton(onClick = { showFilters = !showFilters }) {
-                Icon(Icons.Filled.FilterList, contentDescription = "Filters")
+
+            // Search field
+            AnimatedVisibility(showSearch, enter = fadeIn(), exit = fadeOut()) {
+                OutlinedTextField(
+                    value         = query,
+                    onValueChange = {
+                        query = it
+                        movieViewModel.searchMovies(it)
+                    },
+                    modifier      = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    singleLine    = true,
+                    textStyle     = TextStyle(color = Color.White),
+                    placeholder   = { Text("Search movies…", color = Color.White) }
+                )
             }
-        }
 
-        AnimatedVisibility(visible = showSearch, enter = fadeIn(), exit = fadeOut()) {
-            OutlinedTextField(
-                value = query,
-                onValueChange = {
-                    query = it
-                    movieViewModel.searchMovies(it)
-                },
-                Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                singleLine = true,
-                placeholder = { Text("Search movies…") }
-            )
-        }
-
-        AnimatedVisibility(visible = showFilters, enter = fadeIn(), exit = fadeOut()) {
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Text("Genre", fontWeight = FontWeight.Bold)
-                Row(
-                    Modifier.horizontalScroll(scrollState),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+            // Filters panel
+            AnimatedVisibility(showFilters, enter = fadeIn(), exit = fadeOut()) {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, BorderGray, RoundedCornerShape(12.dp))
+                        .background(MediumGrayBlue, RoundedCornerShape(12.dp))
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    listOf("Action", "Drama", "Comedy", "Sci-Fi").forEach { g ->
-                        FilterChip(
-                            selected = genre == g,
-                            onClick = {
-                                genre = if (genre == g) null else g
-                                movieViewModel.selectedGenre = genre
+                    // Genre chips
+                    Text("Genre", fontWeight = FontWeight.Bold, color = Color.Black)
+                    Row(
+                        Modifier.horizontalScroll(scrollState),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        listOf("Action", "Drama", "Comedy", "Sci-Fi").forEach { g ->
+                            val isSelected = genre == g
+                            FilterChip(
+                                selected = isSelected,
+                                onClick  = {
+                                    genre = if (isSelected) null else g
+                                    movieViewModel.selectedGenre = genre
+                                    movieViewModel.applyFilters()
+                                },
+                                label    = { Text(g, color = if (isSelected) Color.Black else Color.White) },
+                                colors   = FilterChipDefaults.filterChipColors(
+                                    containerColor = if (isSelected) LightGrayBlue else DarkNavy,
+                                    labelColor     = if (isSelected) Color.Black     else Color.White
+                                ),
+                                shape    = RoundedCornerShape(24.dp)
+                            )
+                        }
+                    }
+
+                    // Year range
+                    Text("Year Range", fontWeight = FontWeight.Bold, color = Color.Black)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value         = startYear,
+                            onValueChange = {
+                                startYear = it
+                                movieViewModel.selectedStartYear = it.ifBlank { null }
                                 movieViewModel.applyFilters()
                             },
-                            label = { Text(g) },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                selectedLabelColor     = Color.White
-                            )
+                            modifier      = Modifier.weight(1f),
+                            singleLine    = true,
+                            textStyle     = TextStyle(color = Color.Black),
+                            label         = { Text("From (YYYY)", color = Color.Black) }
+                        )
+                        OutlinedTextField(
+                            value         = endYear,
+                            onValueChange = {
+                                endYear = it
+                                movieViewModel.selectedEndYear = it.ifBlank { null }
+                                movieViewModel.applyFilters()
+                            },
+                            modifier      = Modifier.weight(1f),
+                            singleLine    = true,
+                            textStyle     = TextStyle(color = Color.Black),
+                            label         = { Text("To (YYYY)", color = Color.Black) }
+                        )
+                    }
+
+                    // Rating range
+                    Text("Rating Range", fontWeight = FontWeight.Bold, color = Color.Black)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value         = minRating,
+                            onValueChange = {
+                                minRating = it
+                                movieViewModel.selectedMinRating = it.toDoubleOrNull()
+                                movieViewModel.applyFilters()
+                            },
+                            modifier      = Modifier.weight(1f),
+                            singleLine    = true,
+                            textStyle     = TextStyle(color = Color.Black),
+                            label         = { Text("Min", color = Color.Black) }
+                        )
+                        OutlinedTextField(
+                            value         = maxRating,
+                            onValueChange = {
+                                maxRating = it
+                                movieViewModel.selectedMaxRating = it.toDoubleOrNull()
+                                movieViewModel.applyFilters()
+                            },
+                            modifier      = Modifier.weight(1f),
+                            singleLine    = true,
+                            textStyle     = TextStyle(color = Color.Black),
+                            label         = { Text("Max", color = Color.Black) }
                         )
                     }
                 }
+            }
 
-                Text("Year Range", fontWeight = FontWeight.Bold)
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedTextField(
-                        value = startYear,
-                        onValueChange = { v ->
-                            startYear = v
-                            movieViewModel.selectedStartYear = v.ifBlank { null }
-                            movieViewModel.applyFilters()
-                        },
-                        label      = { Text("From (YYYY)") },
-                        modifier   = Modifier.weight(1f),
-                        singleLine = true
-                    )
-                    OutlinedTextField(
-                        value = endYear,
-                        onValueChange = { v ->
-                            endYear = v
-                            movieViewModel.selectedEndYear = v.ifBlank { null }
-                            movieViewModel.applyFilters()
-                        },
-                        label      = { Text("To (YYYY)") },
-                        modifier   = Modifier.weight(1f),
-                        singleLine = true
-                    )
-                }
+            Spacer(Modifier.height(12.dp))
 
-                Text("Rating Range", fontWeight = FontWeight.Bold)
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedTextField(
-                        value = minRating,
-                        onValueChange = { v ->
-                            minRating = v
-                            movieViewModel.selectedMinRating = v.toDoubleOrNull()
-                            movieViewModel.applyFilters()
-                        },
-                        label = { Text("Min") },
-                        modifier = Modifier.weight(1f),
-                        singleLine = true
-                    )
-                    OutlinedTextField(
-                        value = maxRating,
-                        onValueChange = { v ->
-                            maxRating = v
-                            movieViewModel.selectedMaxRating = v.toDoubleOrNull()
-                            movieViewModel.applyFilters()
-                        },
-                        label = { Text("Max") },
-                        modifier = Modifier.weight(1f),
-                        singleLine = true
-                    )
+            // Movie list
+            LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                items(movies) { movie ->
+                    MovieCard(movie, movieViewModel, scope)
                 }
             }
-        }
 
-        Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(12.dp))
 
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier             = Modifier.weight(1f)
-        ) {
-            items(movies) { movie ->
-                MovieCard(movie, movieViewModel, scope)
-            }
-        }
-
-        Spacer(Modifier.height(8.dp))
-
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment   = Alignment.CenterVertically
-        ) {
-            IconButton(
-                onClick = { movieViewModel.prevPage() },
-                enabled = currentPage > 1
+            // Pagination
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment     = Alignment.CenterVertically
             ) {
-                Icon(Icons.Filled.ArrowBack, contentDescription = "Prev Page")
-            }
-            Text("Page $currentPage / $totalPages", fontSize = 14.sp)
-            IconButton(
-                onClick = { movieViewModel.nextPage() },
-                enabled = currentPage < totalPages
-            ) {
-                Icon(Icons.Filled.ArrowForward, contentDescription = "Next Page")
+                IconButton(onClick = { movieViewModel.prevPage() }, enabled = currentPage > 1) {
+                    Icon(Icons.Filled.ArrowBack, "Prev", tint = LightGrayBlue)
+                }
+                Text("Page $currentPage / $totalPages", color = LightGrayBlue, fontSize = 14.sp)
+                IconButton(onClick = { movieViewModel.nextPage() }, enabled = currentPage < totalPages) {
+                    Icon(Icons.Filled.ArrowForward, "Next", tint = LightGrayBlue)
+                }
             }
         }
     }
@@ -236,15 +241,16 @@ private fun MovieCard(
     viewModel: MovieViewModel,
     scope: kotlinx.coroutines.CoroutineScope
 ) {
-    var fav   by remember { mutableStateOf(viewModel.isMovieFavorite(movie.id.toString())) }
-    var watch by remember { mutableStateOf(viewModel.isMovieInWatchlist(movie.id.toString())) }
+    // Read directly from ViewModel each recomposition
+    val isFav   = viewModel.isMovieFavorite(movie.id.toString())
+    val isWatch = viewModel.isMovieInWatchlist(movie.id.toString())
 
     Card(
-        Modifier
+        modifier = Modifier
             .fillMaxWidth()
             .height(160.dp),
         shape     = RoundedCornerShape(12.dp),
-        colors    = CardDefaults.cardColors(containerColor = Color(0xFFF2F2F2)),
+        colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row {
@@ -252,8 +258,7 @@ private fun MovieCard(
                 painter = rememberAsyncImagePainter(
                     ImageRequest.Builder(LocalContext.current)
                         .data("https://image.tmdb.org/t/p/w300${movie.posterUrl}")
-                        .crossfade(true)
-                        .build()
+                        .crossfade(true).build()
                 ),
                 contentDescription = movie.title,
                 modifier           = Modifier
@@ -261,6 +266,7 @@ private fun MovieCard(
                     .fillMaxHeight(),
                 contentScale       = ContentScale.Crop
             )
+
             Column(
                 Modifier
                     .weight(1f)
@@ -269,28 +275,36 @@ private fun MovieCard(
             ) {
                 Text(movie.title, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 Text("Release: ${movie.releaseDate}", fontSize = 14.sp)
-                Text("IMDB: ${movie.rating}",       fontSize = 14.sp)
-                Text("Genre: ${movie.getGenreNames()}", fontSize = 14.sp)
+                Text("IMDB: ${movie.rating}", fontSize = 14.sp)
+                Text(movie.getGenreNames(), fontSize = 14.sp)
             }
+
             Column(
-                verticalArrangement  = Arrangement.SpaceBetween,
-                horizontalAlignment = Alignment.End,
-                modifier            = Modifier.padding(8.dp)
+                Modifier.padding(8.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.End
             ) {
                 IconButton(onClick = {
-                    fav = !fav
-                    scope.launch { viewModel.toggleFavorite(movie, fav) }
+                    scope.launch {
+                        viewModel.toggleFavorite(movie.id.toString(), !isFav)
+                    }
                 }) {
                     Icon(
-                        imageVector = if (fav) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                        contentDescription = "Favorite"
+                        imageVector = if (isFav) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                        contentDescription = "Favorite",
+                        tint = if (isFav) Color.Red else LightGrayBlue
                     )
                 }
                 IconButton(onClick = {
-                    watch = !watch
-                    scope.launch { viewModel.toggleWatchlist(movie, watch) }
+                    scope.launch {
+                        viewModel.toggleWatchlist(movie.id.toString(), !isWatch)
+                    }
                 }) {
-                    Icon(Icons.Filled.Add, contentDescription = "Add to Watchlist")
+                    Icon(
+                        imageVector = if (isWatch) Icons.Filled.Check else Icons.Filled.Add,
+                        contentDescription = "Watchlist",
+                        tint = if (isWatch) Color.Green else LightGrayBlue
+                    )
                 }
             }
         }
