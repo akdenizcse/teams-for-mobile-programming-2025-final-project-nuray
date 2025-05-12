@@ -7,7 +7,7 @@ import androidx.navigation.compose.composable
 
 @Composable
 fun NavigationGraph(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = "login") {
+    NavHost(navController, startDestination = "login") {
         composable("login") {
             LoginScreen(
                 onLoginSuccess = {
@@ -16,13 +16,19 @@ fun NavigationGraph(navController: NavHostController) {
                     }
                 },
                 onSignUpClick = {
+
                     navController.navigate("signup")
                 }
             )
         }
         composable("signup") {
             SignUpScreen(
-                onBackClick = {
+                onSignUpSuccess = {
+
+                    navController.popBackStack("login", inclusive = false)
+                },
+                onLoginClick = {
+
                     navController.popBackStack()
                 }
             )
@@ -32,3 +38,4 @@ fun NavigationGraph(navController: NavHostController) {
         }
     }
 }
+
