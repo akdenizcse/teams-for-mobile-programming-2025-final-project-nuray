@@ -1,191 +1,181 @@
+// LoginScreen.kt
 package com.example.watchlist
 
 import android.util.Patterns
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.*
+import androidx.compose.material3.CardDefaults.cardColors
+import androidx.compose.material3.ButtonDefaults.buttonColors
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.watchlist.ui.theme.SoftPink
+import com.example.watchlist.ui.theme.White
 
-fun isValidEmail(email: String): Boolean {
-    return Patterns.EMAIL_ADDRESS.matcher(email).matches()
-}
+private val DarkNavy      = Color(0xFF0A1D37)
+private val LightGrayBlue = Color(0xFFA5ABBD)
 
+fun isValidEmail(email: String): Boolean =
+    Patterns.EMAIL_ADDRESS.matcher(email).matches()
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit = {},
     onSignUpClick: () -> Unit = {}
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var email             by remember { mutableStateOf("") }
+    var password          by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
-    var showContent by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        showContent = true
-    }
-
-    val isEmailValid = email.isEmpty() || isValidEmail(email)
-    val isPasswordValid = password.isEmpty() || password.length >= 6
-    val canLogin = isValidEmail(email) && password.length >= 6
-    val context = LocalContext.current
+    var errorMessage      by remember { mutableStateOf<String?>(null) }
     val authViewModel: AuthViewModel = viewModel()
 
     Box(
-        modifier = Modifier
+        Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(DarkNavy)
     ) {
-        AnimatedVisibility(visible = showContent, enter = fadeIn()) {
-            Column(
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.cinecue),
+                contentDescription = "App Logo",
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.AccountCircle,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .size(128.dp)
-                        .padding(bottom = 20.dp)
-                )
 
-                Card(
+                    .width(250.dp)
+                    .height(125.dp)
+                    .padding(bottom = 0.dp)
+            )
+
+            AnimatedVisibility(visible = errorMessage != null, enter = fadeIn()) {
+                Text(
+                    text = errorMessage ?: "",
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 14.sp,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .shadow(8.dp, RoundedCornerShape(24.dp)),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                        .padding(bottom = 12.dp)
+                )
+            }
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                colors = cardColors(containerColor = White)
+            ) {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Column(
-                        modifier = Modifier.padding(24.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        Text(
-                            "Welcome",
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                    Text(
+                        "Welcome",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = DarkNavy
+                    )
+                    Text(
+                        "Login to your account",
+                        fontSize = 14.sp,
+                        color = DarkNavy.copy(alpha = 0.7f)
+                    )
 
-                        Text(
-                            "Login to your account",
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                        )
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        isError = errorMessage != null && !isValidEmail(email),
+                        label = { Text("Email", color = DarkNavy) },
+                        placeholder = { Text("you@domain.com", color = LightGrayBlue) },
+                        singleLine = true,
+                        textStyle = TextStyle(color = DarkNavy),
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-                        OutlinedTextField(
-                            value = email,
-                            onValueChange = { email = it },
-                            label = { Text("Email") },
-                            isError = !isEmailValid && email.isNotEmpty(),
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            shape = RoundedCornerShape(12.dp)
-                        )
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        isError = errorMessage != null && password.length < 6,
+                        label = { Text("Password", color = DarkNavy) },
+                        placeholder = { Text("••••••", color = LightGrayBlue) },
+                        singleLine = true,
+                        textStyle = TextStyle(color = DarkNavy),
+                        visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                                Icon(
+                                    imageVector = if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                    contentDescription = null,
+                                    tint = LightGrayBlue
+                                )
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-                        if (!isEmailValid && email.isNotEmpty()) {
-                            Text(
-                                text = "Invalid email format",
-                                color = MaterialTheme.colorScheme.error,
-                                fontSize = 12.sp
-                            )
-                        }
-
-                        OutlinedTextField(
-                            value = password,
-                            onValueChange = { password = it },
-                            label = { Text("Password") },
-                            isError = !isPasswordValid && password.isNotEmpty(),
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            shape = RoundedCornerShape(12.dp),
-                            trailingIcon = {
-                                IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
-                                    Icon(
-                                        imageVector = if (isPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                        contentDescription = null
+                    Button(
+                        onClick = {
+                            when {
+                                !isValidEmail(email) -> errorMessage = "Invalid email format"
+                                password.length < 6  -> errorMessage = "Password must be at least 6 characters"
+                                else -> {
+                                    errorMessage = null
+                                    authViewModel.loginUser(
+                                        email = email,
+                                        password = password,
+                                        onSuccess = { onLoginSuccess() },
+                                        onError   = { err -> errorMessage = err }
                                     )
                                 }
-                            },
-                            visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation()
-                        )
-
-                        if (!isPasswordValid && password.isNotEmpty()) {
-                            Text(
-                                text = "Password must be at least 6 characters",
-                                color = MaterialTheme.colorScheme.error,
-                                fontSize = 12.sp
-                            )
-                        }
-
-                        errorMessage?.let {
-                            Text(
-                                text = it,
-                                color = MaterialTheme.colorScheme.error,
-                                fontSize = 12.sp
-                            )
-                        }
-
-                        Button(
-                            onClick = {
-                                authViewModel.loginUser(
-                                    email = email,
-                                    password = password,
-                                    onSuccess = {
-                                        errorMessage = null
-                                        Toast.makeText(context, "Login successful!", Toast.LENGTH_SHORT).show()
-                                        onLoginSuccess() // Giriş başarılıysa ana sayfaya yönlendir
-                                    },
-                                    onError = {
-                                        errorMessage = "Invalid email or password"
-                                    }
-                                )
-                            },
-                            enabled = canLogin,
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            )
-                        ) {
-                            Text("Login")
-                        }
+                            }
+                        },
+                        enabled = email.isNotBlank() && password.isNotBlank(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        colors = buttonColors(
+                            containerColor = SoftPink,
+                            contentColor = White
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Log In", fontSize = 16.sp)
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(16.dp))
 
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text("Don't have an account? ", color = White)
                 Text(
-                    text = "Don't have an account?  Sign up",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .padding(top = 8.dp)
-                        .clickable { onSignUpClick() },
-                    textAlign = TextAlign.Center
+                    "Sign up",
+                    color = LightGrayBlue,
+                    modifier = Modifier.clickable { onSignUpClick() }
                 )
             }
         }
