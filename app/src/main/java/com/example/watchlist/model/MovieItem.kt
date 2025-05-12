@@ -1,37 +1,25 @@
+// model/MovieItem.kt
 package com.example.watchlist.model
 
 import com.google.gson.annotations.SerializedName
 
+private val GenreMap = mapOf(
+    28 to "Action",
+    18 to "Drama",
+    35 to "Comedy",
+    878 to "Sci-Fi"
+)
+
 data class MovieItem(
-    @SerializedName("id") val id: String,
-    @SerializedName("title") val title: String = "",
-    @SerializedName("release_date") val releaseDate: String = "",
-    @SerializedName("vote_average") val rating: Double = 0.0,
-    @SerializedName("poster_path") val posterUrl: String = "",
-    @SerializedName("genre_ids") val genreIds: List<Int> = emptyList()
+    @SerializedName("id")           val id: Int,
+    @SerializedName("title")        val title: String,
+    @SerializedName("release_date") val releaseDate: String,
+    @SerializedName("poster_path")  val posterUrl: String,
+    @SerializedName("genre_ids")    val genreIds: List<Int>,
+    @SerializedName("vote_average") val rating: Double
 ) {
-    fun getGenreNames(): String {
-        val genreMap = mapOf(
-            28 to "Action",
-            12 to "Adventure",
-            16 to "Animation",
-            35 to "Comedy",
-            80 to "Crime",
-            99 to "Documentary",
-            18 to "Drama",
-            10751 to "Family",
-            14 to "Fantasy",
-            36 to "History",
-            27 to "Horror",
-            10402 to "Music",
-            9648 to "Mystery",
-            10749 to "Romance",
-            878 to "Sci-Fi",
-            10770 to "TV Movie",
-            53 to "Thriller",
-            10752 to "War",
-            37 to "Western"
-        )
-        return genreIds.mapNotNull { genreMap[it] }.joinToString(", ")
-    }
+    fun getGenreNames(): String =
+        genreIds.mapNotNull { GenreMap[it] }
+            .ifEmpty { listOf("N/A") }
+            .joinToString(", ")
 }
