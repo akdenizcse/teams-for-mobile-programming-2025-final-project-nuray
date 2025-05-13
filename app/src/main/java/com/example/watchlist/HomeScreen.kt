@@ -236,12 +236,12 @@ fun HomeScreen(
 }
 
 @Composable
-private fun MovieCard(
+fun MovieCard(
     movie: MovieItem,
     viewModel: MovieViewModel,
     scope: kotlinx.coroutines.CoroutineScope
 ) {
-    // Read directly from ViewModel each recomposition
+
     val isFav   = viewModel.isMovieFavorite(movie.id.toString())
     val isWatch = viewModel.isMovieInWatchlist(movie.id.toString())
 
