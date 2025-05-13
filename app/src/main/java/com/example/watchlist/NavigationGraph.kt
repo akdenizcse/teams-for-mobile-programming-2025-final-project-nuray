@@ -37,7 +37,13 @@ fun NavigationGraph(navController: NavHostController) {
         composable("home") {
             HomeScreen(navController)
         }
-        composable("favorites"){ FavoritesScreen(navController) }
+        composable("favorites"){
+            FavoritesScreen(navController)
+        }
+        composable("watchlist"){
+            WatchlistScreen(navController)
+        }
+
 
     }
 }

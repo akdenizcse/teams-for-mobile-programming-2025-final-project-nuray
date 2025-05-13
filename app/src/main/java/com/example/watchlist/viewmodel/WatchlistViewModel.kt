@@ -1,4 +1,3 @@
-// app/src/main/java/com/example/watchlist/viewmodel/FavoritesViewModel.kt
 package com.example.watchlist.viewmodel
 
 import android.util.Log
@@ -11,64 +10,37 @@ import com.example.watchlist.model.MovieItem
 import com.example.watchlist.network.RetrofitClient
 import com.example.watchlist.network.MovieDetailResponse
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuth.AuthStateListener
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 
-class FavoritesViewModel : ViewModel() {
-
-    var favoriteMovies by mutableStateOf<List<MovieItem>>(emptyList()); private set
-    var isLoading      by mutableStateOf(false);                private set
+class WatchlistViewModel : ViewModel() {
+    var watchlistMovies by mutableStateOf<List<MovieItem>>(emptyList()); private set
+    var isLoading       by mutableStateOf(false);                 private set
 
     private val auth   = FirebaseAuth.getInstance()
     private val db     = FirebaseFirestore.getInstance()
     private val apiKey = "8a0e3d26a508195b8b070d519d3ad671"
 
-    private val authListener = AuthStateListener { firebaseAuth ->
-        val user = firebaseAuth.currentUser
-        if (user != null) {
-            Log.d("FavVM", "AuthStateListener: user logged in, uid=${user.uid}")
-            subscribeToFavorites(user.uid)
-        } else {
-            Log.d("FavVM", "AuthStateListener: user logged out")
-            favoriteMovies = emptyList()
-        }
-    }
-
     init {
         auth.currentUser?.uid?.let { uid ->
-            Log.d("FavVM", "init: already logged in, uid=$uid")
-            subscribeToFavorites(uid)
+            subscribeToWatchlist(uid)
         }
-
-        auth.addAuthStateListener(authListener)
     }
 
-    override fun onCleared() {
-
-        auth.removeAuthStateListener(authListener)
-        super.onCleared()
-    }
-
-    private fun subscribeToFavorites(uid: String) {
-        Log.d("FavVM", "subscribeToFavorites(uid=$uid)")
+    private fun subscribeToWatchlist(uid: String) {
         isLoading = true
         db.collection("users")
             .document(uid)
-            .collection("favorites")
+            .collection("watchlist")
             .addSnapshotListener { snap, error ->
                 if (error != null) {
-                    Log.e("FavVM", "Firestore listener error", error)
+                    Log.e("WatchVM","listener error",error)
                     isLoading = false
                     return@addSnapshotListener
                 }
-                val ids = snap
-                    ?.documents
-                    ?.mapNotNull { it.id.toIntOrNull() }
-                    ?: emptyList()
-                Log.d("FavVM", "Firestore returned IDs: $ids")
+                val ids = snap?.documents?.mapNotNull { it.id.toIntOrNull() } ?: emptyList()
                 fetchDetails(ids)
             }
     }
@@ -83,13 +55,12 @@ class FavoritesViewModel : ViewModel() {
                             .getMovieDetails(id, apiKey)
                             .toMovieItem()
                     } catch (e: Exception) {
-                        Log.e("FavVM", "getMovieDetails failed for id=$id", e)
+                        Log.e("WatchVM","detail fail for $id", e)
                         null
                     }
                 }
             }
-            favoriteMovies = deferred.awaitAll().filterNotNull()
-            Log.d("FavVM", "Loaded favoriteMovies size=${favoriteMovies.size}")
+            watchlistMovies = deferred.awaitAll().filterNotNull()
             isLoading = false
         }
     }

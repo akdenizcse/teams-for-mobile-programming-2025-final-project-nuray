@@ -26,7 +26,6 @@ class MovieViewModel : ViewModel() {
     private val auth = FirebaseAuth.getInstance()
     private val db   = FirebaseFirestore.getInstance()
 
-    // artık Compose tarafından izlenebilen state’ler
     private var favIdsState   by mutableStateOf<Set<String>>(emptySet())
     private var watchIdsState by mutableStateOf<Set<String>>(emptySet())
 
@@ -62,7 +61,7 @@ class MovieViewModel : ViewModel() {
                 movies      = resp.results
                 currentPage = resp.page
                 totalPages  = resp.total_pages
-            } catch (_: Exception) { /* hata yoksay */ }
+            } catch (_: Exception) {  }
         }
     }
 

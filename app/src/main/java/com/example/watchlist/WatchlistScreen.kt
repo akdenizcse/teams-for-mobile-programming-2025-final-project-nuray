@@ -36,8 +36,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.watchlist.model.MovieItem
-import com.example.watchlist.viewmodel.FavoritesViewModel
 import com.example.watchlist.viewmodel.MovieViewModel
+import com.example.watchlist.viewmodel.WatchlistViewModel
 import kotlinx.coroutines.CoroutineScope
 
 private val DarkNavy       = Color(0xFF0A1D37)
@@ -47,10 +47,10 @@ private val White          = Color(0xFFFFFFFF)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FavoritesScreen(
+fun WatchlistScreen(
     navController: NavHostController,
-    favoritesViewModel: FavoritesViewModel = viewModel(),
-    movieViewModel: MovieViewModel       = viewModel()
+    watchlistViewModel: WatchlistViewModel = viewModel(),
+    movieViewModel: MovieViewModel         = viewModel()
 ) {
     var showSearch   by rememberSaveable { mutableStateOf(false) }
     var showFilters  by rememberSaveable { mutableStateOf(false) }
@@ -61,38 +61,36 @@ fun FavoritesScreen(
     var minRating    by rememberSaveable { mutableStateOf("") }
     var maxRating    by rememberSaveable { mutableStateOf("") }
     var currentPage  by rememberSaveable { mutableStateOf(1) }
-    val pageSize     = 20
+    val pageSize     = 10
 
-    val allMovies    = favoritesViewModel.favoriteMovies
+    val allMovies    = watchlistViewModel.watchlistMovies
     val scrollState  = rememberScrollState()
     val scope: CoroutineScope = rememberCoroutineScope()
 
+    // Apply search & filters
     val filtered = remember(allMovies, query, genre, startYear, endYear, minRating, maxRating) {
         allMovies
             .filter { it.title.contains(query, ignoreCase = true) }
             .filter { genre?.let { g -> it.getGenreNames().contains(g) } ?: true }
             .filter {
                 startYear.toIntOrNull()?.let { sy ->
-                    it.releaseDate.take(4).toIntOrNull()?.let { rd -> rd >= sy } ?: true
+                    it.releaseDate.take(4).toIntOrNull()?.let { rd-> rd>=sy } ?: true
                 } ?: true
             }
             .filter {
                 endYear.toIntOrNull()?.let { ey ->
-                    it.releaseDate.take(4).toIntOrNull()?.let { rd -> rd <= ey } ?: true
+                    it.releaseDate.take(4).toIntOrNull()?.let { rd-> rd<=ey } ?: true
                 } ?: true
             }
             .filter {
-                minRating.toDoubleOrNull()?.let { mr ->
-                    it.rating >= mr
-                } ?: true
+                minRating.toDoubleOrNull()?.let { mr-> it.rating>=mr } ?: true
             }
             .filter {
-                maxRating.toDoubleOrNull()?.let { xr ->
-                    it.rating <= xr
-                } ?: true
+                maxRating.toDoubleOrNull()?.let { xr-> it.rating<=xr } ?: true
             }
     }
 
+    // Pagination
     val totalPages = (filtered.size + pageSize - 1) / pageSize
     if (currentPage > totalPages && totalPages > 0) currentPage = totalPages
     val pageItems = filtered.drop((currentPage - 1) * pageSize).take(pageSize)
@@ -120,13 +118,13 @@ fun FavoritesScreen(
             AnimatedVisibility(showSearch, enter = fadeIn(), exit = fadeOut()) {
                 OutlinedTextField(
                     value         = query,
-                    onValueChange = { query = it; currentPage = 1 },
+                    onValueChange = { query=it; currentPage=1 },
                     modifier      = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
                     singleLine    = true,
                     textStyle     = TextStyle(color = White),
-                    placeholder   = { Text("Search favorites…", color = White) }
+                    placeholder   = { Text("Search watchlist…", color = White) }
                 )
             }
 
@@ -139,7 +137,6 @@ fun FavoritesScreen(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-
                     Text("Genre", fontWeight = FontWeight.Bold, color = White)
                     Row(
                         Modifier
@@ -147,59 +144,55 @@ fun FavoritesScreen(
                             .horizontalScroll(scrollState),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        listOf("Action", "Drama", "Comedy", "Sci-Fi").forEach { g ->
-                            val sel = genre == g
+                        listOf("Action","Drama","Comedy","Sci-Fi").forEach { g->
+                            val sel=genre==g
                             FilterChip(
-                                selected = sel,
-                                onClick  = { genre = if (sel) null else g; currentPage = 1 },
-                                label    = { Text(g, color = if (sel) Color.Black else White) },
-                                colors   = FilterChipDefaults.filterChipColors(
-                                    containerColor = if (sel) LightGrayBlue else DarkNavy,
-                                    labelColor     = if (sel) Color.Black     else White
+                                selected=sel,
+                                onClick={ genre=if(sel) null else g;currentPage=1 },
+                                label={ Text(g, color=if(sel)Color.Black else White) },
+                                colors=FilterChipDefaults.filterChipColors(
+                                    containerColor=if(sel)LightGrayBlue else DarkNavy,
+                                    labelColor=if(sel)Color.Black else White
                                 )
                             )
                         }
                     }
-
-
-                    Text("Year Range", fontWeight = FontWeight.Bold, color = White)
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Year Range", fontWeight=FontWeight.Bold, color=White)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement=Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
-                            value         = startYear,
-                            onValueChange = { startYear = it; currentPage = 1 },
-                            modifier      = Modifier.weight(1f),
-                            singleLine    = true,
-                            textStyle     = TextStyle(color = Color.Black),
-                            label         = { Text("From (YYYY)", color = Color.Black) }
+                            value=startYear,
+                            onValueChange={ startYear=it;currentPage=1 },
+                            modifier=Modifier.weight(1f),
+                            singleLine=true,
+                            textStyle=TextStyle(color=Color.Black),
+                            label={ Text("From (YYYY)", color=Color.Black) }
                         )
                         OutlinedTextField(
-                            value         = endYear,
-                            onValueChange = { endYear = it; currentPage = 1 },
-                            modifier      = Modifier.weight(1f),
-                            singleLine    = true,
-                            textStyle     = TextStyle(color = Color.Black),
-                            label         = { Text("To (YYYY)", color = Color.Black) }
+                            value=endYear,
+                            onValueChange={ endYear=it;currentPage=1 },
+                            modifier=Modifier.weight(1f),
+                            singleLine=true,
+                            textStyle=TextStyle(color=Color.Black),
+                            label={ Text("To (YYYY)", color=Color.Black) }
                         )
                     }
-
-
-                    Text("Rating Range", fontWeight = FontWeight.Bold, color = White)
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Rating Range", fontWeight=FontWeight.Bold, color=White)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement=Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
-                            value         = minRating,
-                            onValueChange = { minRating = it; currentPage = 1 },
-                            modifier      = Modifier.weight(1f),
-                            singleLine    = true,
-                            textStyle     = TextStyle(color = Color.Black),
-                            label         = { Text("Min", color = Color.Black) }
+                            value=minRating,
+                            onValueChange={ minRating=it;currentPage=1 },
+                            modifier=Modifier.weight(1f),
+                            singleLine=true,
+                            textStyle=TextStyle(color=Color.Black),
+                            label={ Text("Min", color=Color.Black) }
                         )
                         OutlinedTextField(
-                            value         = maxRating,
-                            onValueChange = { maxRating = it; currentPage = 1 },
-                            modifier      = Modifier.weight(1f),
-                            singleLine    = true,
-                            textStyle     = TextStyle(color = Color.Black),
-                            label         = { Text("Max", color = Color.Black) }
+                            value=maxRating,
+                            onValueChange={ maxRating=it;currentPage=1 },
+                            modifier=Modifier.weight(1f),
+                            singleLine=true,
+                            textStyle=TextStyle(color=Color.Black),
+                            label={ Text("Max", color=Color.Black) }
                         )
                     }
                 }
@@ -207,38 +200,35 @@ fun FavoritesScreen(
 
             Spacer(Modifier.height(8.dp))
 
-
             LazyColumn(
                 Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement=Arrangement.spacedBy(12.dp)
             ) {
-                items(pageItems) { movie: MovieItem ->
-                    MovieCard(movie, movieViewModel, scope)
+                items(pageItems){ movie:MovieItem->
+                    MovieCard(movie,movieViewModel,scope)
                 }
             }
 
-
             Row(
                 Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment     = Alignment.CenterVertically
+                horizontalArrangement=Arrangement.SpaceBetween,
+                verticalAlignment=Alignment.CenterVertically
             ) {
                 IconButton(
-                    onClick = { if (currentPage > 1) currentPage-- },
-                    enabled = currentPage > 1
-                ) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Prev", tint = LightGrayBlue)
+                    onClick={ if(currentPage>1)currentPage-- },
+                    enabled=currentPage>1
+                ){
+                    Icon(Icons.Filled.ArrowBack, contentDescription="Prev", tint=LightGrayBlue)
                 }
                 Text(
-                    "Page $currentPage / ${if (totalPages >= 1) totalPages else 1}",
-                    color    = LightGrayBlue,
-                    fontSize = 14.sp
+                    "Page $currentPage / ${if(totalPages>=1) totalPages else 1}",
+                    color=LightGrayBlue, fontSize=14.sp
                 )
                 IconButton(
-                    onClick = { if (currentPage < totalPages) currentPage++ },
-                    enabled = currentPage < totalPages
-                ) {
-                    Icon(Icons.Filled.ArrowForward, contentDescription = "Next", tint = LightGrayBlue)
+                    onClick={ if(currentPage<totalPages)currentPage++ },
+                    enabled=currentPage<totalPages
+                ){
+                    Icon(Icons.Filled.ArrowForward, contentDescription="Next", tint=LightGrayBlue)
                 }
             }
         }
