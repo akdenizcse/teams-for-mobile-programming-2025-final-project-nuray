@@ -1,7 +1,7 @@
-// SignUpScreen.kt
 package com.example.watchlist
 
 import android.util.Patterns
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.Image
@@ -10,15 +10,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
-import androidx.compose.material3.CardDefaults.cardColors
-import androidx.compose.material3.ButtonDefaults.buttonColors
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -45,56 +46,72 @@ fun isStrongPassword(password: String): Boolean {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(
-    onSignUpSuccess: () -> Unit = {},
-    onLoginClick: () -> Unit = {}
+    onBackClick: () -> Unit,
+    onSignUpSuccess: () -> Unit,
+    onLoginClick: () -> Unit
 ) {
-    var firstName         by remember { mutableStateOf("") }
-    var lastName          by remember { mutableStateOf("") }
-    var email             by remember { mutableStateOf("") }
-    var password          by remember { mutableStateOf("") }
-    var confirmPassword   by remember { mutableStateOf("") }
-    var isPasswordVisible by remember { mutableStateOf(false) }
-    var isConfirmVisible  by remember { mutableStateOf(false) }
-    var errorMessage      by remember { mutableStateOf<String?>(null) }
-
+    val context = LocalContext.current
     val authViewModel: AuthViewModel = viewModel()
 
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(DarkNavy)
-    ) {
+    var firstName       by remember { mutableStateOf("") }
+    var lastName        by remember { mutableStateOf("") }
+    var email           by remember { mutableStateOf("") }
+    var password        by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var showPwd         by remember { mutableStateOf(false) }
+    var showConfirm     by remember { mutableStateOf(false) }
+    var errorMessage    by remember { mutableStateOf<String?>(null) }
+
+    val canSubmit = listOf(firstName, lastName, email, password, confirmPassword).all { it.isNotBlank() }
+
+    Scaffold(
+        containerColor = DarkNavy,
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { },
+                navigationIcon = {
+                    IconButton(onClick = { onBackClick() }) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = null, tint = Color.White)
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = DarkNavy)
+            )
+        }
+    ) { padding ->
         Column(
             Modifier
                 .fillMaxSize()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.Center,
+                .background(DarkNavy)
+                .padding(padding)
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(Modifier.height(24.dp))
+
             Image(
                 painter = painterResource(id = R.drawable.cinecue),
-                contentDescription = "App Logo",
+                contentDescription = null,
                 modifier = Modifier
                     .width(250.dp)
-                    .height(125.dp)
-                    .padding(bottom = 0.dp)
+                    .height(100.dp)
             )
 
             AnimatedVisibility(visible = errorMessage != null, enter = fadeIn()) {
                 Text(
-                    text = errorMessage ?: "",
+                    errorMessage.orEmpty(),
                     color = MaterialTheme.colorScheme.error,
                     fontSize = 14.sp,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 12.dp)
+                        .padding(vertical = 12.dp)
                 )
             }
 
             Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = cardColors(containerColor = White)
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(24.dp)),
+                colors = CardDefaults.cardColors(containerColor = White)
             ) {
                 Column(
                     Modifier
@@ -102,12 +119,6 @@ fun SignUpScreen(
                         .padding(24.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text(
-                        "Create Account",
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = DarkNavy
-                    )
-
                     OutlinedTextField(
                         value = firstName,
                         onValueChange = { firstName = it },
@@ -140,11 +151,11 @@ fun SignUpScreen(
                         placeholder = { Text("••••••", color = LightGrayBlue) },
                         singleLine = true,
                         textStyle = TextStyle(color = DarkNavy),
-                        visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        visualTransformation = if (showPwd) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
-                            IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                            IconButton(onClick = { showPwd = !showPwd }) {
                                 Icon(
-                                    imageVector = if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                    imageVector = if (showPwd) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
                                     contentDescription = null,
                                     tint = LightGrayBlue
                                 )
@@ -159,11 +170,11 @@ fun SignUpScreen(
                         placeholder = { Text("••••••", color = LightGrayBlue) },
                         singleLine = true,
                         textStyle = TextStyle(color = DarkNavy),
-                        visualTransformation = if (isConfirmVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        visualTransformation = if (showConfirm) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
-                            IconButton(onClick = { isConfirmVisible = !isConfirmVisible }) {
+                            IconButton(onClick = { showConfirm = !showConfirm }) {
                                 Icon(
-                                    imageVector = if (isConfirmVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                    imageVector = if (showConfirm) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
                                     contentDescription = null,
                                     tint = LightGrayBlue
                                 )
@@ -171,37 +182,37 @@ fun SignUpScreen(
                         },
                         modifier = Modifier.fillMaxWidth()
                     )
-
                     Button(
                         onClick = {
                             errorMessage = when {
-                                firstName.isBlank()      -> "First name is required"
-                                lastName.isBlank()       -> "Last name is required"
-                                !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Invalid email format"
-                                !isStrongPassword(password) -> "Password must be ≥6 chars, include upper, lower & symbol"
+                                firstName.isBlank() -> "First name required"
+                                lastName.isBlank()  -> "Last name required"
+                                !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Invalid email"
+                                !isStrongPassword(password) -> "Password must be ≥6 chars, upper, lower & symbol"
                                 password != confirmPassword -> "Passwords do not match"
                                 else -> {
                                     authViewModel.registerUser(
-                                        email = email,
-                                        password = password,
-                                        onSuccess = { onSignUpSuccess() },
-                                        onError   = { err -> errorMessage = err }
+                                        firstName = firstName,
+                                        lastName  = lastName,
+                                        email     = email,
+                                        password  = password,
+                                        onSuccess = {
+                                            Toast.makeText(context, "Signed up!", Toast.LENGTH_SHORT).show()
+                                            onBackClick()
+                                        },
+                                        onError = { errorMessage = it }
                                     )
                                     null
                                 }
                             }
                         },
-                        enabled = firstName.isNotBlank()
-                                && lastName.isNotBlank()
-                                && email.isNotBlank()
-                                && password.isNotBlank()
-                                && confirmPassword.isNotBlank(),
+                        enabled = canSubmit,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp),
-                        colors = buttonColors(
+                        colors = ButtonDefaults.buttonColors(
                             containerColor = SoftPink,
-                            contentColor = White
+                            contentColor   = White
                         ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
@@ -212,10 +223,7 @@ fun SignUpScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
+            Row {
                 Text("Already have an account? ", color = White)
                 Text(
                     "Log in",
