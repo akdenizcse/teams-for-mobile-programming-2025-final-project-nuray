@@ -1,13 +1,12 @@
+// MovieApi.kt
 package com.example.watchlist.network
 
-import com.example.watchlist.network.DiscoverResponse
-import com.example.watchlist.network.MovieDetailResponse
+
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface MovieApi {
-
     @GET("discover/movie")
     suspend fun discoverMovies(
         @Query("api_key") apiKey: String,

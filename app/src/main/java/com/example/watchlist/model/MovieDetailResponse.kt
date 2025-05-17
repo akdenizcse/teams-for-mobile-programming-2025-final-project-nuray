@@ -8,7 +8,6 @@ data class MovieDetailResponse(
     @SerializedName("title")        val title: String,
     @SerializedName("release_date") val releaseDate: String,
     @SerializedName("poster_path")  val posterUrl: String,
-    // TMDB detay uç noktasında "genres": [{ id, name }, ...]
     @SerializedName("genres")       val genres: List<Genre>?,
     @SerializedName("vote_average") val rating: Double
 ) {
@@ -17,8 +16,12 @@ data class MovieDetailResponse(
         title       = title,
         releaseDate = releaseDate,
         posterUrl   = posterUrl,
-        // Genre listesinden sadece ID’leri alıyoruz
         genreIds    = genres?.map { it.id } ?: emptyList(),
         rating      = rating
+    )
+
+    data class Genre(
+        val id: Int,
+        val name: String
     )
 }
