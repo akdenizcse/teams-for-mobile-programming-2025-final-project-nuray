@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 
 class FavoritesViewModel : ViewModel() {
 
-    // UI tarafından gözlemlenecek durum
+
     var favoriteMovies by mutableStateOf<List<MovieItem>>(emptyList()); private set
     var isLoading      by mutableStateOf(false);                private set
 
@@ -39,12 +39,12 @@ class FavoritesViewModel : ViewModel() {
     }
 
     init {
-        // Eğer uygulama açıldığında kullanıcı zaten girişli ise hemen abone ol
+
         auth.currentUser?.uid?.let { uid ->
             Log.d("FavVM", "init: already logged in, uid=$uid")
             subscribeToFavorites(uid)
         }
-        // Oturum açma/kapama durumlarını dinle
+
         auth.addAuthStateListener(authListener)
     }
 
@@ -54,10 +54,7 @@ class FavoritesViewModel : ViewModel() {
         super.onCleared()
     }
 
-    /**
-     * Firestore’daki users/{uid}/favorites koleksiyonuna abone olur.
-     * Her güncellemede ID listesini alıp detayları çekmek için loadDetails’i çağırır.
-     */
+
     private fun subscribeToFavorites(uid: String) {
         Log.d("FavVM", "subscribeToFavorites(uid=$uid)")
         isLoading = true
@@ -79,10 +76,7 @@ class FavoritesViewModel : ViewModel() {
             }
     }
 
-    /**
-     * Verilen ID listesi için TMDB’den detayları asenkron olarak çeker,
-     * favoriteMovies state’ini günceller.
-     */
+
     private fun fetchDetails(ids: List<Int>) {
         viewModelScope.launch {
             isLoading = true

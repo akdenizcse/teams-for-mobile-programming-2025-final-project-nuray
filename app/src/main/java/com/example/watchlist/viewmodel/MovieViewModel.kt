@@ -62,7 +62,7 @@ class MovieViewModel : ViewModel() {
                 movies      = resp.results
                 currentPage = resp.page
                 totalPages  = resp.total_pages
-            } catch (_: Exception) { /* hata yoksay */ }
+            } catch (_: Exception) {  }
         }
     }
 

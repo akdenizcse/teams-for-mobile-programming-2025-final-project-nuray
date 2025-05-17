@@ -1,28 +1,35 @@
-// app/src/main/java/com/example/watchlist/ProfileScreen.kt
 package com.example.watchlist
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.material3.TopAppBarDefaults.centerAlignedTopAppBarColors
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.watchlist.ui.theme.SoftPink
+import com.example.watchlist.ui.theme.White
 import com.example.watchlist.viewmodel.ProfileViewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 private val DarkNavy      = Color(0xFF0A1D37)
 private val LightGrayBlue = Color(0xFFA5ABBD)
@@ -35,28 +42,37 @@ fun ProfileScreen(
     navController: NavController,
     vm: ProfileViewModel = viewModel()
 ) {
-    val fullName   = vm.fullName
-    val email      = vm.email
-    val genres     = vm.preferredGenres.toList()
-    val showDialog = vm.isPasswordDialogVisible
-    val statusMsg  = vm.passwordChangeMessage
+    val context = LocalContext.current
+    var firstName by remember { mutableStateOf("") }
+    var lastName  by remember { mutableStateOf("") }
+    val email     = FirebaseAuth.getInstance().currentUser?.email.orEmpty()
+    var showResetDialog by remember { mutableStateOf(false) }
+    var newPwd by remember { mutableStateOf("") }
+    var confirmPwd by remember { mutableStateOf("") }
+    var err by remember { mutableStateOf<String?>(null) }
+    val genres = vm.watchlistGenres.toList()
 
-    var selected by remember { mutableStateOf(genres.toMutableSet()) }
-    LaunchedEffect(genres) {
-        if (selected.isEmpty()) selected = genres.toMutableSet()
+    LaunchedEffect(Unit) {
+        FirebaseAuth.getInstance().currentUser?.uid?.let { uid ->
+            FirebaseFirestore.getInstance().collection("users").document(uid).get()
+                .addOnSuccessListener { doc ->
+                    firstName = doc.getString("firstName").orEmpty()
+                    lastName  = doc.getString("lastName").orEmpty()
+                }
+        }
     }
 
     Scaffold(
         containerColor = DarkNavy,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Profile", color = Color.White) },
+                title = { Text("Profile", color = White) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = null, tint = Color.White)
+                        Icon(Icons.Filled.ArrowBack, null, tint = White)
                     }
                 },
-                colors = centerAlignedTopAppBarColors(containerColor = DarkNavy)
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = DarkNavy)
             )
         }
     ) { padding ->
@@ -66,7 +82,8 @@ fun ProfileScreen(
                 .background(DarkNavy)
                 .verticalScroll(rememberScrollState())
                 .padding(padding)
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Box(
                 Modifier
@@ -83,92 +100,84 @@ fun ProfileScreen(
                     modifier = Modifier.size(64.dp)
                 )
             }
-            Spacer(Modifier.height(24.dp))
 
-            // ABOUT card
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardWhite),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("ABOUT", fontSize = 18.sp, color = TextDark)
-                        Spacer(Modifier.width(8.dp))
-                        Icon(Icons.Filled.Edit, contentDescription = "Edit About", tint = LightGrayBlue)
-                    }
-                    Spacer(Modifier.height(12.dp))
-                    Text("Full Name", color = TextDark, fontSize = 14.sp)
-                    Text(fullName, color = TextDark, fontSize = 16.sp)
-                    Spacer(Modifier.height(8.dp))
-                    Text("Email Address", color = TextDark, fontSize = 14.sp)
-                    Text(email, color = TextDark, fontSize = 16.sp)
-                    Spacer(Modifier.height(8.dp))
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        "ABOUT",
+                        fontSize = 18.sp,
+                        color = TextDark,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        "$firstName $lastName",
+                        color = TextDark,
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        email,
+                        color = TextDark,
+                        fontSize = 16.sp
+                    )
                     Divider()
-                    Spacer(Modifier.height(8.dp))
                     Row(
                         Modifier
                             .fillMaxWidth()
-                            .clickable { vm.showPasswordDialog() }
+                            .clickable { showResetDialog = true }
                             .padding(vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Filled.LockReset, contentDescription = "Change Password", tint = LightGrayBlue)
+                        Icon(Icons.Filled.LockReset, null, tint = LightGrayBlue)
                         Spacer(Modifier.width(8.dp))
-                        Text("Change Password", color = TextDark, fontSize = 16.sp)
+                        Text(
+                            "Change Password",
+                            color = TextDark,
+                            fontSize = 16.sp
+                        )
                     }
-                    statusMsg?.let {
-                        Text(it, color = Color.Red, fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
-                    }
+                    err?.let { Text(it, color = MaterialTheme.colorScheme.error, fontSize = 14.sp) }
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
-
-            // Preferred Genres card
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardWhite),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("PREFERRED GENRES", fontSize = 18.sp, color = TextDark)
-                        Spacer(Modifier.width(8.dp))
-                        Icon(Icons.Filled.Edit, contentDescription = "Edit Genres", tint = LightGrayBlue)
-                    }
-                    Spacer(Modifier.height(12.dp))
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        "PREFERRED GENRES",
+                        fontSize = 18.sp,
+                        color = TextDark,
+                        fontWeight = FontWeight.Bold
+                    )
                     if (genres.isEmpty()) {
-                        Text("No genres selected yet.", color = TextDark)
+                        Text("No genres selected.", color = TextDark)
                     } else {
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            genres.forEach { genre ->
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    val checked = selected.contains(genre)
-                                    Checkbox(
-                                        checked = checked,
-                                        onCheckedChange = {
-                                            if (checked) selected -= genre else selected += genre
-                                            vm.savePreferredGenres(selected.toList())
-                                        },
-                                        colors = CheckboxDefaults.colors(
-                                            checkedColor   = LightGrayBlue,
-                                            uncheckedColor = TextDark
-                                        )
-                                    )
-                                    Spacer(Modifier.width(8.dp))
-                                    Text(genre, color = TextDark)
-                                }
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            items(genres) { genre ->
+                                FilterChip(
+                                    selected = true,
+                                    onClick = { },
+                                    label = { Text(genre) },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        containerColor = SoftPink,
+                                        labelColor = TextDark
+                                    ),
+                                    shape = RoundedCornerShape(16.dp)
+                                )
                             }
                         }
                     }
                 }
             }
 
-            Spacer(Modifier.height(24.dp))
-
-            // Log Out button
             Button(
                 onClick = {
-                    vm.signOut()
+                    FirebaseAuth.getInstance().signOut()
+                    Toast.makeText(context, "Logged out", Toast.LENGTH_SHORT).show()
                     navController.navigate("login") {
                         popUpTo("home") { inclusive = true }
                     }
@@ -182,84 +191,44 @@ fun ProfileScreen(
             }
         }
 
-        // Change Password dialog
-        if (showDialog) {
-            var currentPass by remember { mutableStateOf("") }
-            var newPass1    by remember { mutableStateOf("") }
-            var newPass2    by remember { mutableStateOf("") }
-            var hideOld    by remember { mutableStateOf(true) }
-            var hideNew1   by remember { mutableStateOf(true) }
-            var hideNew2   by remember { mutableStateOf(true) }
-
+        if (showResetDialog) {
             AlertDialog(
-                onDismissRequest = { vm.hidePasswordDialog() },
+                onDismissRequest = { showResetDialog = false },
                 title = { Text("Change Password") },
                 text = {
-                    Column {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
-                            value = currentPass,
-                            onValueChange = { currentPass = it },
-                            label = { Text("Current Password") },
-                            singleLine = true,
-                            visualTransformation = if (hideOld) PasswordVisualTransformation() else VisualTransformation.None,
-                            trailingIcon = {
-                                IconButton(onClick={ hideOld = !hideOld }) {
-                                    Icon(
-                                        imageVector = if(hideOld) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                                        contentDescription = null
-                                    )
-                                }
-                            }
-                        )
-                        Spacer(Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = newPass1,
-                            onValueChange = { newPass1 = it },
+                            value = newPwd,
+                            onValueChange = { newPwd = it },
                             label = { Text("New Password") },
                             singleLine = true,
-                            visualTransformation = if (hideNew1) PasswordVisualTransformation() else VisualTransformation.None,
-                            trailingIcon = {
-                                IconButton(onClick={ hideNew1 = !hideNew1 }) {
-                                    Icon(
-                                        imageVector = if(hideNew1) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                                        contentDescription = null
-                                    )
-                                }
-                            }
+                            visualTransformation = PasswordVisualTransformation()
                         )
-                        Spacer(Modifier.height(8.dp))
                         OutlinedTextField(
-                            value = newPass2,
-                            onValueChange = { newPass2 = it },
+                            value = confirmPwd,
+                            onValueChange = { confirmPwd = it },
                             label = { Text("Confirm New Password") },
                             singleLine = true,
-                            visualTransformation = if (hideNew2) PasswordVisualTransformation() else VisualTransformation.None,
-                            trailingIcon = {
-                                IconButton(onClick={ hideNew2 = !hideNew2 }) {
-                                    Icon(
-                                        imageVector = if(hideNew2) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                                        contentDescription = null
-                                    )
-                                }
-                            }
+                            visualTransformation = PasswordVisualTransformation()
                         )
-                        vm.passwordChangeMessage?.let { msg ->
-                            Spacer(Modifier.height(8.dp))
-                            Text(msg, color = Color.Red, fontSize = 14.sp)
-                        }
+                        err?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                     }
                 },
                 confirmButton = {
                     TextButton(onClick = {
-                        vm.changePassword(currentPass, newPass1, newPass2)
-                    }) {
-                        Text("Apply")
-                    }
+                        err = when {
+                            newPwd.length < 6 -> "Password must be at least 6 chars"
+                            newPwd != confirmPwd -> "Passwords do not match"
+                            else -> {
+                                FirebaseAuth.getInstance().currentUser?.updatePassword(newPwd)
+                                showResetDialog = false
+                                null
+                            }
+                        }
+                    }) { Text("Apply") }
                 },
                 dismissButton = {
-                    TextButton(onClick = { vm.hidePasswordDialog() }) {
-                        Text("Cancel")
-                    }
+                    TextButton(onClick = { showResetDialog = false }) { Text("Cancel") }
                 }
             )
         }
