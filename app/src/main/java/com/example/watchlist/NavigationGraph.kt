@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.watchlist.FavoritesScreen
 
 @Composable
 fun NavigationGraph(navController: NavHostController) {
@@ -37,7 +36,16 @@ fun NavigationGraph(navController: NavHostController) {
         composable("home") {
             HomeScreen(navController)
         }
-        composable("favorites"){ FavoritesScreen(navController) }
+        composable("favorites"){
+            FavoritesScreen(navController)
+        }
+        composable("watchlist"){
+            WatchlistScreen(navController)
+        }
+        composable("profile"){
+            ProfileScreen(navController)
+        }
+
 
     }
 }
