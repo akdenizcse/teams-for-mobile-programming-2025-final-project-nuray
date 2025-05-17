@@ -7,7 +7,7 @@ import androidx.navigation.compose.composable
 
 @Composable
 fun NavigationGraph(navController: NavHostController) {
-    NavHost(navController, startDestination = "login") {
+    NavHost(navController = navController, startDestination = "login") {
         composable("login") {
             LoginScreen(
                 onLoginSuccess = {
@@ -16,37 +16,39 @@ fun NavigationGraph(navController: NavHostController) {
                     }
                 },
                 onSignUpClick = {
-
                     navController.navigate("signup")
                 }
             )
         }
         composable("signup") {
             SignUpScreen(
+                onBackClick     = { navController.popBackStack() },
                 onSignUpSuccess = {
-
-                    navController.popBackStack("login", inclusive = false)
+                    navController.navigate("home") {
+                        popUpTo("signup") { inclusive = true }
+                    }
                 },
-                onLoginClick = {
-
-                    navController.popBackStack()
+                onLoginClick    = {
+                    navController.navigate("login") {
+                        popUpTo("signup") { inclusive = true }
+                    }
                 }
             )
         }
+
+
+
         composable("home") {
             HomeScreen(navController)
         }
-        composable("favorites"){
+        composable("favorites") {
             FavoritesScreen(navController)
         }
-        composable("watchlist"){
+        composable("watchlist") {
             WatchlistScreen(navController)
         }
-        composable("profile"){
+        composable("profile") {
             ProfileScreen(navController)
         }
-
-
     }
 }
-

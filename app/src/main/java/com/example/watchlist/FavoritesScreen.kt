@@ -67,7 +67,6 @@ fun FavoritesScreen(
     val scrollState  = rememberScrollState()
     val scope: CoroutineScope = rememberCoroutineScope()
 
-    // Uygula: arama + filtreler
     val filtered = remember(allMovies, query, genre, startYear, endYear, minRating, maxRating) {
         allMovies
             .filter { it.title.contains(query, ignoreCase = true) }
@@ -94,7 +93,7 @@ fun FavoritesScreen(
             }
     }
 
-    // Sayfalama
+
     val totalPages = (filtered.size + pageSize - 1) / pageSize
     if (currentPage > totalPages && totalPages > 0) currentPage = totalPages
     val pageItems = filtered.drop((currentPage - 1) * pageSize).take(pageSize)
@@ -110,7 +109,7 @@ fun FavoritesScreen(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            // Arama ve filtre ikonları
+
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 IconButton(onClick = { showSearch = !showSearch }) {
                     Icon(Icons.Filled.Search, contentDescription = "Search", tint = LightGrayBlue)
@@ -120,7 +119,7 @@ fun FavoritesScreen(
                 }
             }
 
-            // Arama çubuğu
+
             AnimatedVisibility(showSearch, enter = fadeIn(), exit = fadeOut()) {
                 OutlinedTextField(
                     value         = query,
@@ -134,7 +133,7 @@ fun FavoritesScreen(
                 )
             }
 
-            // Filtre paneli
+
             AnimatedVisibility(showFilters, enter = fadeIn(), exit = fadeOut()) {
                 Column(
                     Modifier
@@ -144,7 +143,7 @@ fun FavoritesScreen(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Tür
+
                     Text("Genre", fontWeight = FontWeight.Bold, color = White)
                     Row(
                         Modifier
@@ -166,7 +165,7 @@ fun FavoritesScreen(
                         }
                     }
 
-                    // Yıl aralığı
+
                     Text("Year Range", fontWeight = FontWeight.Bold, color = White)
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
@@ -187,7 +186,6 @@ fun FavoritesScreen(
                         )
                     }
 
-                    // Puan aralığı
                     Text("Rating Range", fontWeight = FontWeight.Bold, color = White)
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
@@ -212,7 +210,7 @@ fun FavoritesScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            // Film listesi
+
             LazyColumn(
                 Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -222,7 +220,7 @@ fun FavoritesScreen(
                 }
             }
 
-            // Sayfalama kontrolleri (HomeScreen’dekilerle birebir)
+
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
