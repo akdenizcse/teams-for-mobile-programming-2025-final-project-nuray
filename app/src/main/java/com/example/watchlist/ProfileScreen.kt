@@ -28,6 +28,7 @@ import androidx.navigation.NavController
 import com.example.watchlist.ui.theme.SoftPink
 import com.example.watchlist.ui.theme.White
 import com.example.watchlist.viewmodel.ProfileViewModel
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -45,16 +46,21 @@ fun ProfileScreen(
     val context = LocalContext.current
     var firstName by remember { mutableStateOf("") }
     var lastName  by remember { mutableStateOf("") }
-    val email     = FirebaseAuth.getInstance().currentUser?.email.orEmpty()
+    val user      = FirebaseAuth.getInstance().currentUser
+    val email     = user?.email.orEmpty()
     var showResetDialog by remember { mutableStateOf(false) }
-    var newPwd by remember { mutableStateOf("") }
-    var confirmPwd by remember { mutableStateOf("") }
-    var err by remember { mutableStateOf<String?>(null) }
+    var oldPwd      by remember { mutableStateOf("") }
+    var newPwd      by remember { mutableStateOf("") }
+    var confirmPwd  by remember { mutableStateOf("") }
+    var err         by remember { mutableStateOf<String?>(null) }
     val genres = vm.watchlistGenres.toList()
 
     LaunchedEffect(Unit) {
-        FirebaseAuth.getInstance().currentUser?.uid?.let { uid ->
-            FirebaseFirestore.getInstance().collection("users").document(uid).get()
+        user?.uid?.let { uid ->
+            FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(uid)
+                .get()
                 .addOnSuccessListener { doc ->
                     firstName = doc.getString("firstName").orEmpty()
                     lastName  = doc.getString("lastName").orEmpty()
@@ -106,22 +112,9 @@ fun ProfileScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(
-                        "ABOUT",
-                        fontSize = 18.sp,
-                        color = TextDark,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        "$firstName $lastName",
-                        color = TextDark,
-                        fontSize = 16.sp
-                    )
-                    Text(
-                        email,
-                        color = TextDark,
-                        fontSize = 16.sp
-                    )
+                    Text("ABOUT", fontSize = 18.sp, color = TextDark, fontWeight = FontWeight.Bold)
+                    Text("$firstName $lastName", color = TextDark, fontSize = 16.sp)
+                    Text(email, color = TextDark, fontSize = 16.sp)
                     Divider()
                     Row(
                         Modifier
@@ -132,11 +125,7 @@ fun ProfileScreen(
                     ) {
                         Icon(Icons.Filled.LockReset, null, tint = LightGrayBlue)
                         Spacer(Modifier.width(8.dp))
-                        Text(
-                            "Change Password",
-                            color = TextDark,
-                            fontSize = 16.sp
-                        )
+                        Text("Change Password", color = TextDark, fontSize = 16.sp)
                     }
                     err?.let { Text(it, color = MaterialTheme.colorScheme.error, fontSize = 14.sp) }
                 }
@@ -147,12 +136,7 @@ fun ProfileScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(
-                        "PREFERRED GENRES",
-                        fontSize = 18.sp,
-                        color = TextDark,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text("PREFERRED GENRES", fontSize = 18.sp, color = TextDark, fontWeight = FontWeight.Bold)
                     if (genres.isEmpty()) {
                         Text("No genres selected.", color = TextDark)
                     } else {
@@ -160,7 +144,7 @@ fun ProfileScreen(
                             items(genres) { genre ->
                                 FilterChip(
                                     selected = true,
-                                    onClick = { },
+                                    onClick = {},
                                     label = { Text(genre) },
                                     colors = FilterChipDefaults.filterChipColors(
                                         containerColor = SoftPink,
@@ -193,10 +177,23 @@ fun ProfileScreen(
 
         if (showResetDialog) {
             AlertDialog(
-                onDismissRequest = { showResetDialog = false },
+                onDismissRequest = {
+                    showResetDialog = false
+                    oldPwd = ""
+                    newPwd = ""
+                    confirmPwd = ""
+                    err = null
+                },
                 title = { Text("Change Password") },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value = oldPwd,
+                            onValueChange = { oldPwd = it },
+                            label = { Text("Current Password") },
+                            singleLine = true,
+                            visualTransformation = PasswordVisualTransformation()
+                        )
                         OutlinedTextField(
                             value = newPwd,
                             onValueChange = { newPwd = it },
@@ -216,19 +213,49 @@ fun ProfileScreen(
                 },
                 confirmButton = {
                     TextButton(onClick = {
-                        err = when {
-                            newPwd.length < 6 -> "Password must be at least 6 chars"
-                            newPwd != confirmPwd -> "Passwords do not match"
-                            else -> {
-                                FirebaseAuth.getInstance().currentUser?.updatePassword(newPwd)
-                                showResetDialog = false
-                                null
-                            }
+                        if (oldPwd.isBlank()) {
+                            err = "Please enter current password"
+                        } else if (newPwd.length < 6) {
+                            err = "Password must be at least 6 chars"
+                        } else if (newPwd != confirmPwd) {
+                            err = "Passwords do not match"
+                        } else if (user == null) {
+                            err = "No user logged in"
+                        } else {
+                            val cred = EmailAuthProvider.getCredential(email, oldPwd)
+                            user.reauthenticate(cred)
+                                .addOnSuccessListener {
+                                    user.updatePassword(newPwd)
+                                        .addOnSuccessListener {
+                                            Toast.makeText(context, "Password changed", Toast.LENGTH_SHORT).show()
+                                            showResetDialog = false
+                                            oldPwd = ""
+                                            newPwd = ""
+                                            confirmPwd = ""
+                                            err = null
+                                        }
+                                        .addOnFailureListener { e ->
+                                            err = e.localizedMessage
+                                        }
+                                }
+                                .addOnFailureListener {
+                                    err = "Current password is incorrect"
+                                }
                         }
-                    }) { Text("Apply") }
+                    }) {
+                        Text("Apply")
+                    }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showResetDialog = false }) { Text("Cancel") }
+                    TextButton(onClick = {
+                        showResetDialog = false
+                        oldPwd = ""
+                        newPwd = ""
+                        confirmPwd = ""
+                        err = null
+                    }) {
+                        Text("Cancel")
+                    }
                 }
             )
         }

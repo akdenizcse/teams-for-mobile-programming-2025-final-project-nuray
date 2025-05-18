@@ -36,6 +36,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.watchlist.model.MovieItem
+import com.example.watchlist.MovieCard
+
 import com.example.watchlist.viewmodel.MovieViewModel
 import com.example.watchlist.viewmodel.WatchlistViewModel
 import kotlinx.coroutines.CoroutineScope
