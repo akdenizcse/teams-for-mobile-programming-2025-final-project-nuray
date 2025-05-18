@@ -15,7 +15,9 @@ interface MovieApi {
         @Query("primary_release_date.lte") releaseDateLte: String?,
         @Query("vote_average.gte") voteAverageGte: Double?,
         @Query("vote_average.lte") voteAverageLte: Double?,
+        @Query("sort_by") sortBy: String?,
         @Query("page") page: Int
+
     ): DiscoverResponse
 
     @GET("search/movie")

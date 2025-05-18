@@ -17,6 +17,7 @@ data class MovieItem(
     @SerializedName("poster_path")  val posterUrl: String,
     @SerializedName("genre_ids")    val genreIds: List<Int>,
     @SerializedName("vote_average") val rating: Double
+
 ) {
     fun getGenreNames(): String =
         genreIds.mapNotNull { GenreMap[it] }
