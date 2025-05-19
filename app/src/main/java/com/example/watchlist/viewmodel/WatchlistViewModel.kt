@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.watchlist.model.MovieItem
 import com.example.watchlist.network.RetrofitClient
-import com.example.watchlist.network.MovieDetailResponse
+import com.example.watchlist.model.MovieDetailResponse
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.async

@@ -6,8 +6,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.watchlist.model.MovieDetailResponse
 import com.example.watchlist.network.MovieApi
-import com.example.watchlist.network.MovieDetailResponse
+
 import com.example.watchlist.network.RetrofitClient
 
 import com.google.firebase.auth.FirebaseAuth
