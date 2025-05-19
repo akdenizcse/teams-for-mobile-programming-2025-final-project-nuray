@@ -1,6 +1,6 @@
-package com.example.watchlist.network
+package com.example.watchlist.model
 
-import com.example.watchlist.model.MovieItem
+
 import com.google.gson.annotations.SerializedName
 
 data class MovieDetailResponse(

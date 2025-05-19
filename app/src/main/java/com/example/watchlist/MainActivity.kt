@@ -1,11 +1,12 @@
+// MainActivity.kt
 package com.example.watchlist
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.navigation.compose.rememberNavController
 import com.example.watchlist.ui.theme.WatchListTheme
 
@@ -14,11 +15,17 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            WatchListTheme {
+            var isDarkMode by rememberSaveable { mutableStateOf(true) }
+            var currentLanguage by rememberSaveable { mutableStateOf("English") }
+            WatchListTheme(darkTheme = isDarkMode) {
                 val navController = rememberNavController()
-                Surface(modifier = Modifier) {
-                    NavigationGraph(navController)
-                }
+                NavigationGraph(
+                    navController = navController,
+                    isDarkMode = isDarkMode,
+                    currentLanguage = currentLanguage,
+                    onThemeToggle = { isDarkMode = it },
+                    onLanguageSelected = { currentLanguage = it }
+                )
             }
         }
     }

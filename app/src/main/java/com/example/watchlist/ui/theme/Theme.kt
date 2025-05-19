@@ -1,36 +1,41 @@
+// ui/theme/Theme.kt
 package com.example.watchlist.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.*
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme = darkColorScheme(
-    primary = LightPurple,
-    secondary = DeepPurple,
-    tertiary = SoftPink,
-    background = DeepPurple,
-    surface = Color.Black,
-    onPrimary = White,
-    onSecondary = White,
-    onTertiary = White,
-    onBackground = SoftPink,
-    onSurface = SoftPink
+private val LightColors = lightColorScheme(
+    primary        = LightPrimary,
+    secondary      = LightSecondary,
+    tertiary       = LightTertiary,
+    background     = LightBackground,
+    surface        = LightSurface,
+    onPrimary      = Color.White,
+    onSecondary    = Color.White,
+    onTertiary     = Color.White,
+    onBackground   = LightPrimary,
+    onSurface      = LightPrimary
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = DeepPurple,
-    secondary = LightPurple,
-    tertiary = SoftPink,
-    background = SoftPink,
-    surface = White,
-    onPrimary = White,
-    onSecondary = White,
-    onTertiary = White,
-    onBackground = DeepPurple,
-    onSurface = DeepPurple
+private val DarkColors = darkColorScheme(
+    primary        = DarkPrimary,
+    secondary      = DarkSecondary,
+    tertiary       = DarkTertiary,
+    background     = DarkBackground,
+    surface        = DarkSurface,
+    onPrimary      = Color.White,
+    onSecondary    = Color.White,
+    onTertiary     = Color.White,
+    onBackground   = DarkTertiary,
+    onSurface      = DarkTertiary
 )
 
 @Composable
@@ -39,18 +44,16 @@ fun WatchListTheme(
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-
+    val colors = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            val ctx = LocalContext.current
+            if (darkTheme) dynamicDarkColorScheme(ctx) else dynamicLightColorScheme(ctx)
         }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        darkTheme -> DarkColors
+        else -> LightColors
     }
-
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = colors,
         typography = Typography,
         content = content
     )

@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -27,16 +28,14 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.watchlist.ui.theme.SoftPink
-import com.example.watchlist.ui.theme.White
-
-private val DarkNavy      = Color(0xFF0A1D37)
-private val LightGrayBlue = Color(0xFFA5ABBD)
+import com.example.watchlist.ui.theme.LightButton
+import com.example.watchlist.ui.theme.DarkSecondary
+import com.example.watchlist.ui.theme.DarkBackground
 
 fun isStrongPassword(password: String): Boolean {
     val uppercase = Regex("[A-Z]")
     val lowercase = Regex("[a-z]")
-    val special   = Regex("[^A-Za-z0-9]")
+    val special = Regex("[^A-Za-z0-9]")
     return password.length >= 6 &&
             uppercase.containsMatchIn(password) &&
             lowercase.containsMatchIn(password) &&
@@ -52,36 +51,40 @@ fun SignUpScreen(
 ) {
     val context = LocalContext.current
     val authViewModel: AuthViewModel = viewModel()
+    val colors = MaterialTheme.colorScheme
+    val isDark = colors.background == DarkBackground
+    val buttonCol = if (isDark) DarkSecondary else LightButton
+    val textCol = if (isDark) colors.onBackground else Color.Black
 
-    var firstName       by remember { mutableStateOf("") }
-    var lastName        by remember { mutableStateOf("") }
-    var email           by remember { mutableStateOf("") }
-    var password        by remember { mutableStateOf("") }
+    var firstName by remember { mutableStateOf("") }
+    var lastName by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    var showPwd         by remember { mutableStateOf(false) }
-    var showConfirm     by remember { mutableStateOf(false) }
-    var errorMessage    by remember { mutableStateOf<String?>(null) }
+    var showPwd by remember { mutableStateOf(false) }
+    var showConfirm by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val canSubmit = listOf(firstName, lastName, email, password, confirmPassword).all { it.isNotBlank() }
 
     Scaffold(
-        containerColor = DarkNavy,
+        containerColor = colors.background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { },
+                title = {},
                 navigationIcon = {
-                    IconButton(onClick = { onBackClick() }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = null, tint = Color.White)
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = null, tint = colors.onBackground)
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = DarkNavy)
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = colors.background)
             )
         }
     ) { padding ->
         Column(
             Modifier
                 .fillMaxSize()
-                .background(DarkNavy)
+                .background(colors.background)
                 .padding(padding)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -93,25 +96,25 @@ fun SignUpScreen(
                 contentDescription = null,
                 modifier = Modifier
                     .width(250.dp)
-                    .height(100.dp)
+                    .height(100.dp),
+                contentScale = ContentScale.Fit
             )
 
             AnimatedVisibility(visible = errorMessage != null, enter = fadeIn()) {
                 Text(
-                    errorMessage.orEmpty(),
-                    color = MaterialTheme.colorScheme.error,
+                    text = errorMessage.orEmpty(),
+                    color = colors.error,
                     fontSize = 14.sp,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 12.dp)
+                        .padding(bottom = 12.dp)
                 )
             }
 
             Card(
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(24.dp)),
-                colors = CardDefaults.cardColors(containerColor = White)
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = colors.surface)
             ) {
                 Column(
                     Modifier
@@ -122,83 +125,108 @@ fun SignUpScreen(
                     OutlinedTextField(
                         value = firstName,
                         onValueChange = { firstName = it },
-                        label = { Text("First Name", color = DarkNavy) },
+                        label = { Text("First Name", color = colors.onSurface) },
                         singleLine = true,
-                        textStyle = TextStyle(color = DarkNavy),
-                        modifier = Modifier.fillMaxWidth()
+                        textStyle = TextStyle(color = colors.onSurface),
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = colors.primary,
+                            unfocusedBorderColor = colors.onSurfaceVariant,
+                            cursorColor = colors.primary
+                        )
                     )
                     OutlinedTextField(
                         value = lastName,
                         onValueChange = { lastName = it },
-                        label = { Text("Last Name", color = DarkNavy) },
+                        label = { Text("Last Name", color = colors.onSurface) },
                         singleLine = true,
-                        textStyle = TextStyle(color = DarkNavy),
-                        modifier = Modifier.fillMaxWidth()
+                        textStyle = TextStyle(color = colors.onSurface),
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = colors.primary,
+                            unfocusedBorderColor = colors.onSurfaceVariant,
+                            cursorColor = colors.primary
+                        )
                     )
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = { Text("Email", color = DarkNavy) },
-                        placeholder = { Text("you@domain.com", color = LightGrayBlue) },
+                        label = { Text("Email", color = colors.onSurface) },
+                        placeholder = { Text("you@domain.com", color = colors.onSurface.copy(alpha = 0.5f)) },
                         singleLine = true,
-                        textStyle = TextStyle(color = DarkNavy),
-                        modifier = Modifier.fillMaxWidth()
+                        textStyle = TextStyle(color = colors.onSurface),
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = colors.primary,
+                            unfocusedBorderColor = colors.onSurfaceVariant,
+                            cursorColor = colors.primary
+                        )
                     )
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
-                        label = { Text("Password", color = DarkNavy) },
-                        placeholder = { Text("••••••", color = LightGrayBlue) },
+                        label = { Text("Password", color = colors.onSurface) },
+                        placeholder = { Text("••••••", color = colors.onSurface.copy(alpha = 0.5f)) },
                         singleLine = true,
-                        textStyle = TextStyle(color = DarkNavy),
+                        textStyle = TextStyle(color = colors.onSurface),
                         visualTransformation = if (showPwd) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
                             IconButton(onClick = { showPwd = !showPwd }) {
                                 Icon(
                                     imageVector = if (showPwd) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
                                     contentDescription = null,
-                                    tint = LightGrayBlue
+                                    tint = colors.onSurfaceVariant
                                 )
                             }
                         },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = colors.primary,
+                            unfocusedBorderColor = colors.onSurfaceVariant,
+                            cursorColor = colors.primary
+                        )
                     )
                     OutlinedTextField(
                         value = confirmPassword,
                         onValueChange = { confirmPassword = it },
-                        label = { Text("Confirm Password", color = DarkNavy) },
-                        placeholder = { Text("••••••", color = LightGrayBlue) },
+                        label = { Text("Confirm Password", color = colors.onSurface) },
+                        placeholder = { Text("••••••", color = colors.onSurface.copy(alpha = 0.5f)) },
                         singleLine = true,
-                        textStyle = TextStyle(color = DarkNavy),
+                        textStyle = TextStyle(color = colors.onSurface),
                         visualTransformation = if (showConfirm) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
                             IconButton(onClick = { showConfirm = !showConfirm }) {
                                 Icon(
                                     imageVector = if (showConfirm) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
                                     contentDescription = null,
-                                    tint = LightGrayBlue
+                                    tint = colors.onSurfaceVariant
                                 )
                             }
                         },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = colors.primary,
+                            unfocusedBorderColor = colors.onSurfaceVariant,
+                            cursorColor = colors.primary
+                        )
                     )
                     Button(
                         onClick = {
                             errorMessage = when {
                                 firstName.isBlank() -> "First name required"
-                                lastName.isBlank()  -> "Last name required"
+                                lastName.isBlank() -> "Last name required"
                                 !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Invalid email"
                                 !isStrongPassword(password) -> "Password must be ≥6 chars, upper, lower & symbol"
                                 password != confirmPassword -> "Passwords do not match"
                                 else -> {
                                     authViewModel.registerUser(
                                         firstName = firstName,
-                                        lastName  = lastName,
-                                        email     = email,
-                                        password  = password,
+                                        lastName = lastName,
+                                        email = email,
+                                        password = password,
                                         onSuccess = {
-                                            Toast.makeText(context, "Signed up!", Toast.LENGTH_SHORT).show()
-                                            onBackClick()
+                                            Toast.makeText(context, "Signed up!",	Toast.LENGTH_SHORT).show()
+                                            onSignUpSuccess()
                                         },
                                         onError = { errorMessage = it }
                                     )
@@ -211,8 +239,10 @@ fun SignUpScreen(
                             .fillMaxWidth()
                             .height(48.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = SoftPink,
-                            contentColor   = White
+                            containerColor = buttonCol,
+                            contentColor = textCol,
+                            disabledContainerColor = buttonCol.copy(alpha = 0.4f),
+                            disabledContentColor = textCol.copy(alpha = 0.4f)
                         ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
@@ -223,11 +253,14 @@ fun SignUpScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            Row {
-                Text("Already have an account? ", color = White)
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text("Already have an account? ", color = colors.onBackground)
                 Text(
                     "Log in",
-                    color = LightGrayBlue,
+                    color = colors.primary,
                     modifier = Modifier.clickable { onLoginClick() }
                 )
             }

@@ -1,7 +1,7 @@
-// network/DiscoverResponse.kt
-package com.example.watchlist.network
 
-import com.example.watchlist.model.MovieItem
+package com.example.watchlist.model
+
+
 import com.google.gson.annotations.SerializedName
 
 data class DiscoverResponse(

@@ -2,6 +2,8 @@
 package com.example.watchlist.network
 
 
+import com.example.watchlist.model.DiscoverResponse
+import com.example.watchlist.model.MovieDetailResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
