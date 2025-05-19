@@ -62,6 +62,10 @@ fun ProfileScreen(
     val email     = user?.email.orEmpty()
 
     var showResetDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
+    var showLogoutDialog by remember { mutableStateOf(false) }
+    var editFirst by remember { mutableStateOf("") }
+    var editLast by remember { mutableStateOf("") }
     var oldPwd by remember { mutableStateOf("") }
     var newPwd by remember { mutableStateOf("") }
     var confirmPwd by remember { mutableStateOf("") }
@@ -129,7 +133,17 @@ fun ProfileScreen(
             ) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("ABOUT", fontSize = 18.sp, color = colors.onSurface, fontWeight = FontWeight.Bold)
-                    Text("$firstName $lastName", color = colors.onSurface, fontSize = 16.sp)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("$firstName $lastName", color = colors.onSurface, fontSize = 16.sp)
+                        Spacer(Modifier.width(8.dp))
+                        IconButton(onClick = {
+                            editFirst = firstName
+                            editLast = lastName
+                            showEditDialog = true
+                        }) {
+                            Icon(Icons.Filled.Edit, contentDescription = "Edit Name", tint = colors.primary)
+                        }
+                    }
                     Text(email, color = colors.onSurface, fontSize = 16.sp)
                     Divider(color = colors.outline)
                     Row(
@@ -177,13 +191,7 @@ fun ProfileScreen(
             }
 
             Button(
-                onClick = {
-                    FirebaseAuth.getInstance().signOut()
-                    Toast.makeText(context, "Logged out", Toast.LENGTH_SHORT).show()
-                    navController.navigate("login") {
-                        popUpTo("home") { inclusive = true }
-                    }
-                },
+                onClick = { showLogoutDialog = true },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = colors.primary,
@@ -195,6 +203,92 @@ fun ProfileScreen(
                 Spacer(Modifier.width(8.dp))
                 Text("Log Out", fontSize = 16.sp)
             }
+        }
+
+        if (showLogoutDialog) {
+            AlertDialog(
+                onDismissRequest = { showLogoutDialog = false },
+                title = { Text("Confirm Logout", color = colors.onBackground) },
+                text = { Text("Are you sure you want to log out?", color = colors.onBackground) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        FirebaseAuth.getInstance().signOut()
+                        Toast.makeText(context, "Logged out", Toast.LENGTH_SHORT).show()
+                        navController.navigate("login") {
+                            popUpTo("home") { inclusive = true }
+                        }
+                    }) {
+                        Text("Yes",fontSize = 8.sp, color = colors.primary)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showLogoutDialog = false }) {
+                        Text("No",fontSize = 8.sp, color = colors.primary)
+                    }
+                },
+                containerColor = colors.surface
+            )
+        }
+
+        if (showEditDialog) {
+            AlertDialog(
+                onDismissRequest = { showEditDialog = false },
+                title = { Text("Edit Name", color = colors.onBackground) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value = editFirst,
+                            onValueChange = { editFirst = it },
+                            label = { Text("First Name") },
+                            singleLine = true,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor   = colors.primary,
+                                unfocusedBorderColor = colors.primary,
+                                cursorColor          = colors.primary
+                            )
+                        )
+                        OutlinedTextField(
+                            value = editLast,
+                            onValueChange = { editLast = it },
+                            label = { Text("Last Name") },
+                            singleLine = true,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor   = colors.primary,
+                                unfocusedBorderColor = colors.primary,
+                                cursorColor          = colors.primary
+                            )
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        user?.uid?.let { uid ->
+                            FirebaseFirestore.getInstance()
+                                .collection("users")
+                                .document(uid)
+                                .update(mapOf(
+                                    "firstName" to editFirst,
+                                    "lastName" to editLast
+                                ))
+                                .addOnSuccessListener {
+                                    firstName = editFirst
+                                    lastName = editLast
+                                    showEditDialog = false
+                                    Toast.makeText(context, "Name updated", Toast.LENGTH_SHORT).show()
+                                }
+                                .addOnFailureListener { e -> Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show() }
+                        }
+                    }) {
+                        Text("Save", color = colors.primary)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showEditDialog = false }) {
+                        Text("Cancel", color = colors.primary)
+                    }
+                },
+                containerColor = colors.surface
+            )
         }
 
         if (showResetDialog) {

@@ -107,7 +107,7 @@ class MovieViewModel : ViewModel() {
                 currentPage = resp.page
                 totalPages  = resp.total_pages
             } catch (_: Exception) {
-                // Hata durumunda fallback veya log ekleyebilirsiniz
+
             }
         }
     }
