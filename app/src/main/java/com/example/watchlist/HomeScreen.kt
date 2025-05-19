@@ -69,7 +69,7 @@ fun HomeScreen(
     var showFilters  by rememberSaveable { mutableStateOf(false) }
     var showSortMenu by rememberSaveable { mutableStateOf(false) }
     var searchQuery  by rememberSaveable { mutableStateOf("") }
-    var genreFilter  by rememberSaveable { mutableStateOf<String?>(null) }
+    var genreFilter  by rememberSaveable { mutableStateOf<List<String>>(emptyList()) }
     var fromYear     by rememberSaveable { mutableStateOf("") }
     var toYear       by rememberSaveable { mutableStateOf("") }
     var minRating    by rememberSaveable { mutableStateOf("") }
@@ -79,6 +79,17 @@ fun HomeScreen(
     val scrollState  = rememberScrollState()
     val scope        = rememberCoroutineScope()
     val moviesList   = viewModel.movies
+
+    fun applyAll() {
+        viewModel.applyFilters(
+            query     = searchQuery.ifBlank { null },
+            genre     = genreFilter.takeIf { it.isNotEmpty() }?.joinToString(","),
+            yearFrom  = fromYear.ifBlank { null },
+            yearTo    = toYear.ifBlank { null },
+            ratingMin = minRating.toDoubleOrNull(),
+            ratingMax = maxRating.toDoubleOrNull()
+        )
+    }
 
     Scaffold(
         containerColor = colors.background,
@@ -109,14 +120,7 @@ fun HomeScreen(
                                 text = { Text(option, color = colors.onSurface) },
                                 onClick = {
                                     viewModel.selectedSort = option
-                                    viewModel.applyFilters(
-                                        query     = searchQuery.ifBlank { null },
-                                        genre     = genreFilter,
-                                        yearFrom  = fromYear.ifBlank { null },
-                                        yearTo    = toYear.ifBlank { null },
-                                        ratingMin = minRating.toDoubleOrNull(),
-                                        ratingMax = maxRating.toDoubleOrNull()
-                                    )
+                                    applyAll()
                                     showSortMenu = false
                                 }
                             )
@@ -140,16 +144,9 @@ fun HomeScreen(
                     value = searchQuery,
                     onValueChange = {
                         searchQuery = it
-                        viewModel.applyFilters(
-                            query     = it.ifBlank { null },
-                            genre     = genreFilter,
-                            yearFrom  = fromYear.ifBlank { null },
-                            yearTo    = toYear.ifBlank { null },
-                            ratingMin = minRating.toDoubleOrNull(),
-                            ratingMax = maxRating.toDoubleOrNull()
-                        )
+                        applyAll()
                     },
-                    modifier   = Modifier
+                    Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
                     singleLine = true,
@@ -178,19 +175,12 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         listOf("Action", "Drama", "Comedy", "Sci-Fi").forEach { g ->
-                            val selected = genreFilter == g
+                            val selected = genreFilter.contains(g)
                             FilterChip(
                                 selected = selected,
                                 onClick = {
-                                    genreFilter = if (selected) null else g
-                                    viewModel.applyFilters(
-                                        query     = searchQuery.ifBlank { null },
-                                        genre     = genreFilter,
-                                        yearFrom  = fromYear.ifBlank { null },
-                                        yearTo    = toYear.ifBlank { null },
-                                        ratingMin = minRating.toDoubleOrNull(),
-                                        ratingMax = maxRating.toDoubleOrNull()
-                                    )
+                                    genreFilter = if (selected) genreFilter - g else genreFilter + g
+                                    applyAll()
                                 },
                                 label = { Text(g, color = if (selected) colors.onPrimary else colors.onSurface) },
                                 colors = FilterChipDefaults.filterChipColors(
@@ -211,18 +201,11 @@ fun HomeScreen(
                     ) {
                         OutlinedTextField(
                             value = fromYear,
-                            onValueChange = { new ->
-                                fromYear = new
-                                viewModel.applyFilters(
-                                    query     = searchQuery.ifBlank { null },
-                                    genre     = genreFilter,
-                                    yearFrom  = fromYear.ifBlank { null },
-                                    yearTo    = toYear.ifBlank { null },
-                                    ratingMin = minRating.toDoubleOrNull(),
-                                    ratingMax = maxRating.toDoubleOrNull()
-                                )
+                            onValueChange = {
+                                fromYear = it
+                                applyAll()
                             },
-                            modifier   = Modifier.weight(1f),
+                            Modifier.weight(1f),
                             singleLine = true,
                             placeholder = { Text("From (YYYY)", color = colors.onBackground) },
                             textStyle  = TextStyle(color = colors.onBackground),
@@ -234,18 +217,11 @@ fun HomeScreen(
                         )
                         OutlinedTextField(
                             value = toYear,
-                            onValueChange = { new ->
-                                toYear = new
-                                viewModel.applyFilters(
-                                    query     = searchQuery.ifBlank { null },
-                                    genre     = genreFilter,
-                                    yearFrom  = fromYear.ifBlank { null },
-                                    yearTo    = toYear.ifBlank { null },
-                                    ratingMin = minRating.toDoubleOrNull(),
-                                    ratingMax = maxRating.toDoubleOrNull()
-                                )
+                            onValueChange = {
+                                toYear = it
+                                applyAll()
                             },
-                            modifier   = Modifier.weight(1f),
+                            Modifier.weight(1f),
                             singleLine = true,
                             placeholder = { Text("To (YYYY)", color = colors.onBackground) },
                             textStyle  = TextStyle(color = colors.onBackground),
@@ -264,18 +240,11 @@ fun HomeScreen(
                     ) {
                         OutlinedTextField(
                             value = minRating,
-                            onValueChange = { new ->
-                                minRating = new
-                                viewModel.applyFilters(
-                                    query     = searchQuery.ifBlank { null },
-                                    genre     = genreFilter,
-                                    yearFrom  = fromYear.ifBlank { null },
-                                    yearTo    = toYear.ifBlank { null },
-                                    ratingMin = minRating.toDoubleOrNull(),
-                                    ratingMax = maxRating.toDoubleOrNull()
-                                )
+                            onValueChange = {
+                                minRating = it
+                                applyAll()
                             },
-                            modifier   = Modifier.weight(1f),
+                            Modifier.weight(1f),
                             singleLine = true,
                             placeholder = { Text("Min", color = colors.onBackground) },
                             textStyle  = TextStyle(color = colors.onBackground),
@@ -287,18 +256,11 @@ fun HomeScreen(
                         )
                         OutlinedTextField(
                             value = maxRating,
-                            onValueChange = { new ->
-                                maxRating = new
-                                viewModel.applyFilters(
-                                    query     = searchQuery.ifBlank { null },
-                                    genre     = genreFilter,
-                                    yearFrom  = fromYear.ifBlank { null },
-                                    yearTo    = toYear.ifBlank { null },
-                                    ratingMin = minRating.toDoubleOrNull(),
-                                    ratingMax = maxRating.toDoubleOrNull()
-                                )
+                            onValueChange = {
+                                maxRating = it
+                                applyAll()
                             },
-                            modifier   = Modifier.weight(1f),
+                            Modifier.weight(1f),
                             singleLine = true,
                             placeholder = { Text("Max", color = colors.onBackground) },
                             textStyle  = TextStyle(color = colors.onBackground),
@@ -351,7 +313,9 @@ fun MovieCard(
     val isWatch= viewModel.isMovieInWatchlist(movie.id.toString())
 
     Card(
-        Modifier.fillMaxWidth().height(160.dp),
+        Modifier
+            .fillMaxWidth()
+            .height(160.dp),
         shape     = RoundedCornerShape(12.dp),
         colors    = CardDefaults.cardColors(containerColor = bg),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -365,16 +329,28 @@ fun MovieCard(
                         .build()
                 ),
                 contentDescription = movie.title,
-                modifier           = Modifier.width(120.dp).fillMaxHeight(),
+                modifier           = Modifier
+                    .width(120.dp)
+                    .fillMaxHeight(),
                 contentScale       = ContentScale.Crop
             )
-            Column(Modifier.weight(1f).padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column(
+                Modifier
+                    .weight(1f)
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
                 Text(movie.title, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = colors.onSurface)
                 Text("Release: ${movie.releaseDate}", fontSize = 14.sp, color = colors.onSurface)
                 Text("IMDb: ${movie.rating}", fontSize = 14.sp, color = colors.onSurface)
                 Text(movie.getGenreNames(), fontSize = 14.sp, color = colors.onSurface)
             }
-            Column(Modifier.padding(8.dp), verticalArrangement = Arrangement.SpaceBetween, horizontalAlignment = Alignment.End) {
+            Column(
+                Modifier
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.End
+            ) {
                 IconButton(onClick = { coroutineScope.launch { viewModel.toggleFavorite(movie.id.toString(), !isFav) } }) {
                     Icon(if (isFav) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder, tint = if (isFav) Color.Red else tint, contentDescription = "Favorite")
                 }

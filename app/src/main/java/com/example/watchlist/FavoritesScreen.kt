@@ -47,7 +47,7 @@ fun FavoritesScreen(
     var showSearch  by rememberSaveable { mutableStateOf(false) }
     var showFilters by rememberSaveable { mutableStateOf(false) }
     var query       by rememberSaveable { mutableStateOf("") }
-    var genre       by rememberSaveable { mutableStateOf<String?>(null) }
+    var genres      by rememberSaveable { mutableStateOf<List<String>>(emptyList()) }
     var startYear   by rememberSaveable { mutableStateOf("") }
     var endYear     by rememberSaveable { mutableStateOf("") }
     var minRating   by rememberSaveable { mutableStateOf("") }
@@ -59,10 +59,10 @@ fun FavoritesScreen(
     val scrollState = rememberScrollState()
     val scope       = rememberCoroutineScope()
 
-    val filtered = remember(allMovies, query, genre, startYear, endYear, minRating, maxRating) {
+    val filtered = remember(allMovies, query, genres, startYear, endYear, minRating, maxRating) {
         allMovies
             .filter { it.title.contains(query, ignoreCase = true) }
-            .filter { genre?.let { g -> it.getGenreNames().contains(g) } ?: true }
+            .filter { genres.isEmpty() || genres.any { g -> it.getGenreNames().contains(g) } }
             .filter {
                 startYear.toIntOrNull()?.let { sy ->
                     it.releaseDate.take(4).toIntOrNull()?.let { rd -> rd >= sy } ?: true
@@ -92,12 +92,21 @@ fun FavoritesScreen(
                 .padding(padding)
                 .padding(16.dp)
         ) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                IconButton(onClick = { showSearch = !showSearch }) {
-                    Icon(Icons.Filled.Search, contentDescription = "Search", tint = tint)
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    IconButton(onClick = { showSearch = !showSearch }) {
+                        Icon(Icons.Filled.Search, contentDescription = "Search", tint = tint)
+                    }
+                    IconButton(onClick = { showFilters = !showFilters }) {
+                        Icon(Icons.Filled.FilterList, contentDescription = "Filters", tint = tint)
+                    }
                 }
-                IconButton(onClick = { showFilters = !showFilters }) {
-                    Icon(Icons.Filled.FilterList, contentDescription = "Filters", tint = tint)
+                IconButton(onClick = { navController.navigate("settings") }) {
+                    Icon(Icons.Filled.Settings, contentDescription = "Settings", tint = tint)
                 }
             }
 
@@ -136,13 +145,11 @@ fun FavoritesScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         listOf("Action","Drama","Comedy","Sci-Fi").forEach { g ->
-                            val sel = genre == g
+                            val sel = genres.contains(g)
                             FilterChip(
                                 selected = sel,
-                                onClick  = { genre = if (sel) null else g; currentPage = 1 },
-                                label    = {
-                                    Text(g, color = if (sel) colors.onPrimary else onSurface)
-                                },
+                                onClick  = { genres = if (sel) genres - g else genres + g; currentPage = 1 },
+                                label    = { Text(g, color = if (sel) colors.onPrimary else onSurface) },
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = tint,
                                     selectedLabelColor     = colors.onPrimary,
@@ -243,4 +250,3 @@ fun FavoritesScreen(
         }
     }
 }
-
