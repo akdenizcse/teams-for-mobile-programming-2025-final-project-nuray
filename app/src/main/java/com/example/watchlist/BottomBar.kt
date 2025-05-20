@@ -7,6 +7,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -33,8 +34,18 @@ fun BottomBar(navController: NavController) {
         items.forEach { screen ->
             val selected = currentRoute == screen.route
             NavigationBarItem(
-                icon = { Icon(screen.icon, contentDescription = screen.title) },
-                label = { Text(screen.title, fontSize = 10.sp) },
+                icon = {
+                    Icon(
+                        imageVector = screen.icon,
+                        contentDescription = stringResource(screen.titleRes)
+                    )
+                },
+                label = {
+                    Text(
+                        text = stringResource(screen.titleRes),
+                        fontSize = 10.sp
+                    )
+                },
                 selected = selected,
                 onClick = {
                     if (currentRoute != screen.route) {

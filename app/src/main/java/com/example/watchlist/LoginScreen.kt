@@ -1,4 +1,3 @@
-// LoginScreen.kt
 package com.example.watchlist
 
 import android.util.Patterns
@@ -8,7 +7,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -16,18 +17,21 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.watchlist.ui.theme.LightButton
-import com.example.watchlist.ui.theme.DarkSecondary
 import com.example.watchlist.ui.theme.DarkBackground
+import com.example.watchlist.ui.theme.DarkSecondary
+import com.example.watchlist.ui.theme.LightButton
+
 
 private fun isValidEmail(email: String): Boolean =
     Patterns.EMAIL_ADDRESS.matcher(email).matches()
@@ -38,16 +42,32 @@ fun LoginScreen(
     onLoginSuccess: () -> Unit = {},
     onSignUpClick: () -> Unit = {}
 ) {
-    val colors    = MaterialTheme.colorScheme
-    val isDark    = colors.background == DarkBackground
-    val buttonCol = if (isDark) DarkSecondary else LightButton
-    val textCol   = if (isDark) colors.onBackground else Color.Black
 
-    var email             by remember { mutableStateOf("") }
-    var password          by remember { mutableStateOf("") }
-    var isPasswordVisible by remember { mutableStateOf(false) }
-    var errorMessage      by remember { mutableStateOf<String?>(null) }
-    val authVM: AuthViewModel = viewModel()
+    val sLogoDesc       = stringResource(R.string.app_name)
+    val sEmailLabel     = stringResource(R.string.email_label)
+    val sEmailHint      = stringResource(R.string.email_placeholder)
+    val sPwdLabel       = stringResource(R.string.password_label)
+    val sPwdHint        = stringResource(R.string.password_placeholder)
+    val sWelcome        = stringResource(R.string.login_welcome)
+    val sSubtitle       = stringResource(R.string.login_subtitle)
+    val sLogIn          = stringResource(R.string.login)
+    val sErrInvalidMail = stringResource(R.string.err_invalid_email)
+    val sErrPwdShort    = stringResource(R.string.err_pwd_length)
+    val sPromptNoAcc    = stringResource(R.string.already_have_account)
+    val sSignUp         = stringResource(R.string.sign_up_button)
+
+
+    val authVM: AuthViewModel    = viewModel()
+    val colors                   = MaterialTheme.colorScheme
+    val isDark                   = colors.background == DarkBackground
+    val btnColor                 = if (isDark) DarkSecondary else LightButton
+    val txtColor                 = if (isDark) colors.onBackground else Color.Black
+
+
+    var email        by remember { mutableStateOf("") }
+    var password     by remember { mutableStateOf("") }
+    var showPwd      by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Box(
         Modifier
@@ -57,33 +77,28 @@ fun LoginScreen(
         Column(
             Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(24.dp),
-            verticalArrangement   = Arrangement.Center,
-            horizontalAlignment   = Alignment.CenterHorizontally
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
             Image(
-                painter           = painterResource(id = R.drawable.cinecue),
-                contentDescription = "App Logo",
+                painter           = painterResource(R.drawable.cinecue),
+                contentDescription= sLogoDesc,
                 modifier          = Modifier
                     .width(250.dp)
                     .height(125.dp),
                 contentScale      = ContentScale.Fit
             )
 
-            AnimatedVisibility(visible = errorMessage != null, enter = fadeIn()) {
-                Text(
-                    text     = errorMessage.orEmpty(),
-                    color    = colors.error,
-                    fontSize = 14.sp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 12.dp)
-                )
-            }
+            Spacer(Modifier.height(16.dp))
+
 
             Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape    = RoundedCornerShape(24.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(24.dp)),
                 colors   = CardDefaults.cardColors(containerColor = colors.surface)
             ) {
                 Column(
@@ -92,23 +107,37 @@ fun LoginScreen(
                         .padding(24.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+
                     Text(
-                        "Welcome",
+                        text  = sWelcome,
                         style = MaterialTheme.typography.headlineSmall,
                         color = colors.onSurface
                     )
                     Text(
-                        "Login to your account",
+                        text     = sSubtitle,
                         fontSize = 14.sp,
-                        color = colors.onSurface.copy(alpha = 0.7f)
+                        color    = colors.onSurface.copy(alpha = 0.7f)
                     )
+
+
+                    AnimatedVisibility(visible = errorMessage != null, enter = fadeIn()) {
+                        Text(
+                            text     = errorMessage.orEmpty(),
+                            color    = colors.error,
+                            fontSize = 14.sp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
+                        )
+                    }
+
 
                     OutlinedTextField(
                         value         = email,
                         onValueChange = { email = it },
                         isError       = errorMessage != null && !isValidEmail(email),
-                        label         = { Text("Email", color = colors.onSurface) },
-                        placeholder   = { Text("you@domain.com", color = colors.onSurface.copy(alpha = 0.5f)) },
+                        label         = { Text(sEmailLabel, color = colors.onSurface) },
+                        placeholder   = { Text(sEmailHint, color = colors.onSurface.copy(alpha = .5f)) },
                         singleLine    = true,
                         textStyle     = TextStyle(color = colors.onSurface),
                         modifier      = Modifier.fillMaxWidth(),
@@ -120,26 +149,27 @@ fun LoginScreen(
                         )
                     )
 
+
                     OutlinedTextField(
-                        value               = password,
-                        onValueChange       = { password = it },
-                        isError             = errorMessage != null && password.length < 6,
-                        label               = { Text("Password", color = colors.onSurface) },
-                        placeholder         = { Text("••••••", color = colors.onSurface.copy(alpha = 0.5f)) },
-                        singleLine          = true,
-                        textStyle           = TextStyle(color = colors.onSurface),
-                        visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        trailingIcon        = {
-                            IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                        value                = password,
+                        onValueChange        = { password = it },
+                        isError              = errorMessage != null && password.length < 6,
+                        label                = { Text(sPwdLabel, color = colors.onSurface) },
+                        placeholder          = { Text(sPwdHint, color = colors.onSurface.copy(alpha = .5f)) },
+                        singleLine           = true,
+                        visualTransformation = if (showPwd) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon         = {
+                            IconButton(onClick = { showPwd = !showPwd }) {
                                 Icon(
-                                    imageVector        = if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                    imageVector        = if (showPwd) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
                                     contentDescription = null,
                                     tint               = colors.onSurfaceVariant
                                 )
                             }
                         },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors   = OutlinedTextFieldDefaults.colors(
+                        textStyle = TextStyle(color = colors.onSurface),
+                        modifier  = Modifier.fillMaxWidth(),
+                        colors    = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor   = colors.primary,
                             unfocusedBorderColor = colors.onSurfaceVariant,
                             cursorColor          = colors.primary,
@@ -147,49 +177,51 @@ fun LoginScreen(
                         )
                     )
 
+
                     Button(
                         onClick = {
-                            when {
-                                !isValidEmail(email) -> errorMessage = "Invalid email format"
-                                password.length < 6  -> errorMessage = "Password must be at least 6 characters"
+                            errorMessage = when {
+                                !isValidEmail(email) -> sErrInvalidMail
+                                password.length < 6  -> sErrPwdShort
                                 else -> {
-                                    errorMessage = null
                                     authVM.loginUser(
                                         email    = email,
                                         password = password,
-                                        onSuccess = { onLoginSuccess() },
-                                        onError   = { err -> errorMessage = err }
+                                        onSuccess= { onLoginSuccess() },
+                                        onError  = { err -> errorMessage = err }
                                     )
+                                    null
                                 }
                             }
                         },
-                        enabled = email.isNotBlank() && password.isNotBlank(),
+                        enabled  = email.isNotBlank() && password.isNotBlank(),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor         = buttonCol,
-                            contentColor           = textCol,
-                            disabledContainerColor = buttonCol.copy(alpha = 0.4f),
-                            disabledContentColor   = textCol.copy(alpha = 0.4f)
+                            containerColor         = btnColor,
+                            contentColor           = txtColor,
+                            disabledContainerColor = btnColor.copy(alpha = 0.4f),
+                            disabledContentColor   = txtColor.copy(alpha = 0.4f)
                         ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("Log In", fontSize = 16.sp)
+                        Text(sLogIn, fontSize = 16.sp)
                     }
                 }
             }
 
             Spacer(Modifier.height(16.dp))
 
+
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
-                Text("Don't have an account? ", color = colors.onBackground)
+                Text(sPromptNoAcc, color = colors.onBackground)
                 Text(
-                    "Sign up",
-                    color = colors.primary,
+                    text     = " $sSignUp",
+                    color    = colors.primary,
                     modifier = Modifier.clickable { onSignUpClick() }
                 )
             }
