@@ -19,13 +19,13 @@
     <string name="sort_by_release">Çıkış Tarihine Göre</string>
     <string name="label_genre">Tür</string>
     <string name="year_range_label">Yıl Aralığı</string>
-    <string name="rating_range_label">Puan Aralığı</string>
+    <string name="rating_range_label">Puan Aralığı (IMDB)</string>
     <string name="from_hint">Başlangıç (YYYY)</string>
     <string name="to_hint">Bitiş (YYYY)</string>
     <string name="min_hint">Min</string>
-    <string name="max_hint">Max</string>
+    <string name="max_hint">Maks</string>
     <string name="page_label">%1$d / %2$d</string>
-    <string name="release_label">Yayın: %1$s</string>
+    <string name="release_label">Yayın tarihi: %1$s</string>
     <string name="imdb_label">IMDb: %1$.1f</string>
 
 

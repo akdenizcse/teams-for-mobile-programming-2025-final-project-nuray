@@ -62,25 +62,26 @@ fun HomeScreen(
     var minRating by rememberSaveable { mutableStateOf("") }
     var maxRating by rememberSaveable { mutableStateOf("") }
 
-    val cdSearch = stringResource(R.string.cd_search)
-    val cdFilter = stringResource(R.string.cd_filter)
-    val cdSort = stringResource(R.string.cd_sort)
-    val cdPrev = stringResource(R.string.cd_previous)
-    val cdNext = stringResource(R.string.cd_next)
-    val cdSettings = stringResource(R.string.settings_title)
-    val homeTitle = stringResource(R.string.home_title)
-    val hintSearch = stringResource(R.string.hint_search)
-    val sortOptions = listOf(
-        stringResource(R.string.sort_default),
-        stringResource(R.string.sort_by_rating),
-        stringResource(R.string.sort_by_release)
-    )
-    val yearLabel = stringResource(R.string.year_range_label)
-    val ratingLabel = stringResource(R.string.rating_range_label)
-    val fromHint = stringResource(R.string.from_hint)
-    val toHint = stringResource(R.string.to_hint)
-    val minHint = stringResource(R.string.min_hint)
-    val maxHint = stringResource(R.string.max_hint)
+    val cdSearch      = stringResource(R.string.cd_search)
+    val cdFilter      = stringResource(R.string.cd_filter)
+    val cdSort        = stringResource(R.string.cd_sort)
+    val cdPrev        = stringResource(R.string.cd_previous)
+    val cdNext        = stringResource(R.string.cd_next)
+    val cdSettings    = stringResource(R.string.settings_title)
+    val homeTitle     = stringResource(R.string.home_title)
+    val hintSearch    = stringResource(R.string.hint_search)
+
+    val sortDefault   = stringResource(R.string.sort_default)
+    val sortByRating  = stringResource(R.string.sort_by_rating)
+    val sortByRelease = stringResource(R.string.sort_by_release)
+    val sortOptions   = listOf(sortDefault, sortByRating, sortByRelease)
+
+    val yearLabel     = stringResource(R.string.year_range_label)
+    val fromHint      = stringResource(R.string.from_hint)
+    val toHint        = stringResource(R.string.to_hint)
+    val ratingLabel   = stringResource(R.string.rating_range_label)
+    val minHint       = stringResource(R.string.min_hint)
+    val maxHint       = stringResource(R.string.max_hint)
 
     LaunchedEffect(Unit) {
         viewModel.applyFilters()
@@ -88,19 +89,19 @@ fun HomeScreen(
 
     LaunchedEffect(searchQuery, selectedGenres, fromYear, toYear, minRating, maxRating) {
         viewModel.applyFilters(
-            query = searchQuery.takeIf { it.isNotBlank() },
-            genres = selectedGenres.takeIf { it.isNotEmpty() },
+            query     = searchQuery.takeIf { it.isNotBlank() },
+            genres    = selectedGenres.takeIf { it.isNotEmpty() },
             startYear = fromYear.takeIf { it.isNotBlank() },
-            endYear = toYear.takeIf { it.isNotBlank() },
-            minVote = minRating.toDoubleOrNull(),
-            maxVote = maxRating.toDoubleOrNull()
+            endYear   = toYear.takeIf { it.isNotBlank() },
+            minVote   = minRating.toDoubleOrNull(),
+            maxVote   = maxRating.toDoubleOrNull()
         )
     }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(homeTitle, color = colors.onBackground) },
+                title  = { Text(homeTitle, color = colors.onBackground) },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = colors.background),
                 actions = {
                     IconButton(onClick = { showSearch = !showSearch }) { Icon(Icons.Filled.Search, cdSearch, tint = colors.primary) }
@@ -108,19 +109,31 @@ fun HomeScreen(
                     IconButton(onClick = { showSortMenu = !showSortMenu }) { Icon(Icons.Filled.Sort, cdSort, tint = colors.primary) }
                     Spacer(Modifier.weight(1f))
                     IconButton(onClick = { navController.navigate("settings") }) { Icon(Icons.Filled.Settings, cdSettings, tint = colors.primary) }
+
                     DropdownMenu(expanded = showSortMenu, onDismissRequest = { showSortMenu = false }) {
-                        sortOptions.forEach { opt ->
-                            DropdownMenuItem(text = { Text(opt) }, onClick = {
-                                viewModel.selectedSort = opt
+                        sortOptions.forEach { option ->
+                            DropdownMenuItem(text = { Text(option) }, onClick = {
+                                viewModel.selectedSort = option
+                                if (option == sortByRating) {
+                                    viewModel.applyFilters(
+                                        query     = searchQuery.takeIf { it.isNotBlank() },
+                                        genres    = selectedGenres.takeIf { it.isNotEmpty() },
+                                        startYear = fromYear.takeIf { it.isNotBlank() },
+                                        endYear   = toYear.takeIf { it.isNotBlank() },
+                                        minVote   = 0.9,
+                                        maxVote   = 9.9
+                                    )
+                                } else {
+                                    viewModel.applyFilters(
+                                        query     = searchQuery.takeIf { it.isNotBlank() },
+                                        genres    = selectedGenres.takeIf { it.isNotEmpty() },
+                                        startYear = fromYear.takeIf { it.isNotBlank() },
+                                        endYear   = toYear.takeIf { it.isNotBlank() },
+                                        minVote   = minRating.toDoubleOrNull(),
+                                        maxVote   = maxRating.toDoubleOrNull()
+                                    )
+                                }
                                 showSortMenu = false
-                                viewModel.applyFilters(
-                                    query = searchQuery.takeIf { it.isNotBlank() },
-                                    genres = selectedGenres.takeIf { it.isNotEmpty() },
-                                    startYear = fromYear.takeIf { it.isNotBlank() },
-                                    endYear = toYear.takeIf { it.isNotBlank() },
-                                    minVote = minRating.toDoubleOrNull(),
-                                    maxVote = maxRating.toDoubleOrNull()
-                                )
                             })
                         }
                     }
@@ -145,9 +158,9 @@ fun HomeScreen(
                     singleLine = true,
                     placeholder = { Text(hintSearch, color = colors.onBackground.copy(alpha = .6f)) },
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = colors.primary,
+                        focusedBorderColor   = colors.primary,
                         unfocusedBorderColor = colors.primary,
-                        cursorColor = colors.primary
+                        cursorColor          = colors.primary
                     )
                 )
             }
@@ -174,9 +187,9 @@ fun HomeScreen(
                                 label = { Text(label, color = if (selected) colors.onPrimary else colors.onSurface) },
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = colors.primary,
-                                    selectedLabelColor = colors.onPrimary,
-                                    containerColor = colors.surfaceVariant,
-                                    labelColor = colors.onSurface
+                                    selectedLabelColor     = colors.onPrimary,
+                                    containerColor         = colors.surfaceVariant,
+                                    labelColor             = colors.onSurface
                                 )
                             )
                         }
@@ -190,9 +203,9 @@ fun HomeScreen(
                             modifier = Modifier.weight(1f),
                             placeholder = { Text(fromHint) },
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = colors.primary,
+                                focusedBorderColor   = colors.primary,
                                 unfocusedBorderColor = colors.primary,
-                                cursorColor = colors.primary
+                                cursorColor          = colors.primary
                             )
                         )
                         OutlinedTextField(
@@ -201,9 +214,9 @@ fun HomeScreen(
                             modifier = Modifier.weight(1f),
                             placeholder = { Text(toHint) },
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = colors.primary,
+                                focusedBorderColor   = colors.primary,
                                 unfocusedBorderColor = colors.primary,
-                                cursorColor = colors.primary
+                                cursorColor          = colors.primary
                             )
                         )
                     }
@@ -216,9 +229,9 @@ fun HomeScreen(
                             modifier = Modifier.weight(1f),
                             placeholder = { Text(minHint) },
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = colors.primary,
+                                focusedBorderColor   = colors.primary,
                                 unfocusedBorderColor = colors.primary,
-                                cursorColor = colors.primary
+                                cursorColor          = colors.primary
                             )
                         )
                         OutlinedTextField(
@@ -227,9 +240,9 @@ fun HomeScreen(
                             modifier = Modifier.weight(1f),
                             placeholder = { Text(maxHint) },
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = colors.primary,
+                                focusedBorderColor   = colors.primary,
                                 unfocusedBorderColor = colors.primary,
-                                cursorColor = colors.primary
+                                cursorColor          = colors.primary
                             )
                         )
                     }
@@ -268,7 +281,6 @@ fun HomeScreen(
     }
 }
 
-
 @Composable
 fun MovieCard(
     movie: MovieItem,
@@ -291,7 +303,7 @@ fun MovieCard(
     ) {
         Row {
             Image(
-                painter            = rememberAsyncImagePainter(
+                painter = rememberAsyncImagePainter(
                     ImageRequest.Builder(LocalContext.current)
                         .data("https://image.tmdb.org/t/p/w300${movie.posterUrl}")
                         .crossfade(true)
@@ -311,8 +323,7 @@ fun MovieCard(
             ) {
                 Text(movie.title, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = colors.onSurface)
                 Text(stringResource(R.string.release_label, movie.releaseDate), fontSize = 14.sp, color = colors.onSurface)
-                Text(stringResource(R.string.imdb_label, movie.rating),     fontSize = 14.sp, color = colors.onSurface)
-
+                Text(stringResource(R.string.imdb_label, movie.rating), fontSize = 14.sp, color = colors.onSurface)
                 val genreText = movie.getGenreNames()
                     .split(", ")
                     .map { tag ->

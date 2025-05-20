@@ -40,50 +40,50 @@ fun ProfileScreen(
     navController: NavController,
     vm: ProfileViewModel = viewModel()
 ) {
-
-    val context               = LocalContext.current
-    val sProfileTitle         = stringResource(R.string.profile_title)
-    val sBackDesc             = stringResource(R.string.cd_previous)
-    val sAbout                = stringResource(R.string.label_about)
-    val sChangePassword       = stringResource(R.string.change_password)
-    val sPreferredGenres      = stringResource(R.string.preferred_genres)
-    val sNoGenres             = stringResource(R.string.no_genres_selected)
-    val sLogout               = stringResource(R.string.logout)
-    val sConfirmLogout        = stringResource(R.string.confirm_logout)
-    val sYes                  = stringResource(R.string.yes)
-    val sNo                   = stringResource(R.string.no)
-    val sEditName             = stringResource(R.string.edit_name)
-    val sFirstNameLabel       = stringResource(R.string.first_name_label)
-    val sLastNameLabel        = stringResource(R.string.last_name_label)
-    val sSave                 = stringResource(R.string.save)
-    val sCancel               = stringResource(R.string.cancel)
-    val sApply                = stringResource(R.string.apply)
-    val sCurrentPassword      = stringResource(R.string.current_password)
-    val sNewPassword          = stringResource(R.string.new_password)
-    val sConfirmNewPassword   = stringResource(R.string.confirm_new_password)
-    val sNameUpdated          = stringResource(R.string.name_updated)
-    val sPwdChanged           = stringResource(R.string.pwd_changed)
-    val sErrEnterCurrent      = stringResource(R.string.err_enter_current)
-    val sErrPwdLength         = stringResource(R.string.err_pwd_length)
-    val sErrPwdMatch          = stringResource(R.string.err_pwd_match)
-    val sErrNoUser            = stringResource(R.string.err_no_user)
-    val sErrCurrentIncorrect  = stringResource(R.string.err_current_incorrect)
+    val context = LocalContext.current
+    val sProfileTitle       = stringResource(R.string.profile_title)
+    val sBackDesc           = stringResource(R.string.cd_previous)
+    val sAbout              = stringResource(R.string.label_about)
+    val sChangePassword     = stringResource(R.string.change_password)
+    val sPreferredGenres    = stringResource(R.string.preferred_genres)
+    val sNoGenres           = stringResource(R.string.no_genres_selected)
+    val sLogout             = stringResource(R.string.logout)
+    val sConfirmLogout      = stringResource(R.string.confirm_logout)
+    val sYes                = stringResource(R.string.yes)
+    val sNo                 = stringResource(R.string.no)
+    val sEditName           = stringResource(R.string.edit_name)
+    val sFirstNameLabel     = stringResource(R.string.first_name_label)
+    val sLastNameLabel      = stringResource(R.string.last_name_label)
+    val sSave               = stringResource(R.string.save)
+    val sCancel             = stringResource(R.string.cancel)
+    val sApply              = stringResource(R.string.apply)
+    val sCurrentPassword    = stringResource(R.string.current_password)
+    val sNewPassword        = stringResource(R.string.new_password)
+    val sConfirmNewPassword = stringResource(R.string.confirm_new_password)
+    val sNameUpdated        = stringResource(R.string.name_updated)
+    val sPwdChanged         = stringResource(R.string.pwd_changed)
+    val sErrEnterCurrent    = stringResource(R.string.err_enter_current)
+    val sErrPwdLength       = stringResource(R.string.err_pwd_length)
+    val sErrPwdComplex      = stringResource(R.string.err_pwd_strength)
+    val sErrPwdMatch        = stringResource(R.string.err_pwd_match)
+    val sErrNoUser          = stringResource(R.string.err_no_user)
+    val sErrCurrentIncorrect= stringResource(R.string.err_current_incorrect)
 
     val colors = MaterialTheme.colorScheme
 
-    var firstName       by remember { mutableStateOf("") }
-    var lastName        by remember { mutableStateOf("") }
-    val user            = FirebaseAuth.getInstance().currentUser
-    val email           = user?.email.orEmpty()
-    var showResetDialog by remember { mutableStateOf(false) }
-    var showEditDialog  by remember { mutableStateOf(false) }
+    var firstName        by remember { mutableStateOf("") }
+    var lastName         by remember { mutableStateOf("") }
+    val user             = FirebaseAuth.getInstance().currentUser
+    val email            = user?.email.orEmpty()
+    var showResetDialog  by remember { mutableStateOf(false) }
+    var showEditDialog   by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
-    var editFirst       by remember { mutableStateOf("") }
-    var editLast        by remember { mutableStateOf("") }
-    var oldPwd          by remember { mutableStateOf("") }
-    var newPwd          by remember { mutableStateOf("") }
-    var confirmPwd      by remember { mutableStateOf("") }
-    var err             by remember { mutableStateOf<String?>(null) }
+    var editFirst        by remember { mutableStateOf("") }
+    var editLast         by remember { mutableStateOf("") }
+    var oldPwd           by remember { mutableStateOf("") }
+    var newPwd           by remember { mutableStateOf("") }
+    var confirmPwd       by remember { mutableStateOf("") }
+    var err              by remember { mutableStateOf<String?>(null) }
 
     val genres = vm.watchlistGenres.toList()
 
@@ -107,11 +107,7 @@ fun ProfileScreen(
                 title = { Text(sProfileTitle, color = colors.onBackground) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            Icons.Filled.ArrowBack,
-                            contentDescription = sBackDesc,
-                            tint = colors.primary
-                        )
+                        Icon(Icons.Filled.ArrowBack, contentDescription = sBackDesc, tint = colors.primary)
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = colors.background)
@@ -127,7 +123,6 @@ fun ProfileScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-
             Box(
                 Modifier
                     .size(100.dp)
@@ -136,19 +131,10 @@ fun ProfileScreen(
                     .background(colors.secondaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Filled.AccountCircle,
-                    contentDescription = sProfileTitle,
-                    tint = colors.onSecondaryContainer,
-                    modifier = Modifier.size(64.dp)
-                )
+                Icon(Icons.Filled.AccountCircle, contentDescription = sProfileTitle, tint = colors.onSecondaryContainer, modifier = Modifier.size(64.dp))
             }
 
-
-            Card(
-                colors = CardDefaults.cardColors(containerColor = colors.surface),
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            Card(colors = CardDefaults.cardColors(containerColor = colors.surface), modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(sAbout, fontSize = 18.sp, color = colors.onSurface, fontWeight = FontWeight.Bold)
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -179,11 +165,7 @@ fun ProfileScreen(
                 }
             }
 
-
-            Card(
-                colors = CardDefaults.cardColors(containerColor = colors.surface),
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            Card(colors = CardDefaults.cardColors(containerColor = colors.surface), modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(sPreferredGenres, fontSize = 18.sp, color = colors.onSurface, fontWeight = FontWeight.Bold)
                     if (genres.isEmpty()) {
@@ -201,7 +183,7 @@ fun ProfileScreen(
                                         containerColor         = colors.surfaceVariant,
                                         labelColor             = colors.onSurface
                                     ),
-                                    shape    = RoundedCornerShape(16.dp)
+                                    shape = RoundedCornerShape(16.dp)
                                 )
                             }
                         }
@@ -221,7 +203,6 @@ fun ProfileScreen(
             }
         }
 
-
         if (showLogoutDialog) {
             AlertDialog(
                 onDismissRequest = { showLogoutDialog = false },
@@ -231,9 +212,7 @@ fun ProfileScreen(
                     TextButton(onClick = {
                         FirebaseAuth.getInstance().signOut()
                         Toast.makeText(context, sLogout, Toast.LENGTH_SHORT).show()
-                        navController.navigate("login") {
-                            popUpTo("home") { inclusive = true }
-                        }
+                        navController.navigate("login") { popUpTo("home") { inclusive = true } }
                     }) {
                         Text(sYes, fontSize = 18.sp, color = colors.primary)
                     }
@@ -247,7 +226,6 @@ fun ProfileScreen(
             )
         }
 
-
         if (showEditDialog) {
             AlertDialog(
                 onDismissRequest = { showEditDialog = false },
@@ -255,22 +233,22 @@ fun ProfileScreen(
                 text             = {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
-                            value        = editFirst,
-                            onValueChange= { editFirst = it },
-                            label        = { Text(sFirstNameLabel) },
-                            singleLine   = true,
-                            colors       = OutlinedTextFieldDefaults.colors(
+                            value = editFirst,
+                            onValueChange = { editFirst = it },
+                            label = { Text(sFirstNameLabel) },
+                            singleLine = true,
+                            colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor   = colors.primary,
                                 unfocusedBorderColor = colors.primary,
                                 cursorColor          = colors.primary
                             )
                         )
                         OutlinedTextField(
-                            value        = editLast,
-                            onValueChange= { editLast = it },
-                            label        = { Text(sLastNameLabel) },
-                            singleLine   = true,
-                            colors       = OutlinedTextFieldDefaults.colors(
+                            value = editLast,
+                            onValueChange = { editLast = it },
+                            label = { Text(sLastNameLabel) },
+                            singleLine = true,
+                            colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor   = colors.primary,
                                 unfocusedBorderColor = colors.primary,
                                 cursorColor          = colors.primary
@@ -291,9 +269,7 @@ fun ProfileScreen(
                                     showEditDialog = false
                                     Toast.makeText(context, sNameUpdated, Toast.LENGTH_SHORT).show()
                                 }
-                                .addOnFailureListener { e ->
-                                    Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
-                                }
+                                .addOnFailureListener { e -> Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show() }
                         }
                     }) {
                         Text(sSave, color = colors.primary)
@@ -308,7 +284,6 @@ fun ProfileScreen(
             )
         }
 
-
         if (showResetDialog) {
             AlertDialog(
                 onDismissRequest = {
@@ -319,36 +294,36 @@ fun ProfileScreen(
                 text             = {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
-                            value                = oldPwd,
-                            onValueChange        = { oldPwd = it },
-                            label                = { Text(sCurrentPassword) },
-                            singleLine           = true,
+                            value = oldPwd,
+                            onValueChange = { oldPwd = it },
+                            label = { Text(sCurrentPassword) },
+                            singleLine = true,
                             visualTransformation = PasswordVisualTransformation(),
-                            colors               = OutlinedTextFieldDefaults.colors(
+                            colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor   = colors.primary,
                                 unfocusedBorderColor = colors.primary,
                                 cursorColor          = colors.primary
                             )
                         )
                         OutlinedTextField(
-                            value                = newPwd,
-                            onValueChange        = { newPwd = it },
-                            label                = { Text(sNewPassword) },
-                            singleLine           = true,
+                            value = newPwd,
+                            onValueChange = { newPwd = it },
+                            label = { Text(sNewPassword) },
+                            singleLine = true,
                             visualTransformation = PasswordVisualTransformation(),
-                            colors               = OutlinedTextFieldDefaults.colors(
+                            colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor   = colors.primary,
                                 unfocusedBorderColor = colors.primary,
                                 cursorColor          = colors.primary
                             )
                         )
                         OutlinedTextField(
-                            value                = confirmPwd,
-                            onValueChange        = { confirmPwd = it },
-                            label                = { Text(sConfirmNewPassword) },
-                            singleLine           = true,
+                            value = confirmPwd,
+                            onValueChange = { confirmPwd = it },
+                            label = { Text(sConfirmNewPassword) },
+                            singleLine = true,
                             visualTransformation = PasswordVisualTransformation(),
-                            colors               = OutlinedTextFieldDefaults.colors(
+                            colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor   = colors.primary,
                                 unfocusedBorderColor = colors.primary,
                                 cursorColor          = colors.primary
@@ -359,25 +334,34 @@ fun ProfileScreen(
                 },
                 confirmButton    = {
                     TextButton(onClick = {
-                        when {
-                            oldPwd.isBlank()         -> err = sErrEnterCurrent
-                            newPwd.length < 6        -> err = sErrPwdLength
-                            newPwd != confirmPwd     -> err = sErrPwdMatch
-                            user == null             -> err = sErrNoUser
-                            else -> {
-                                val cred = EmailAuthProvider.getCredential(email, oldPwd)
-                                user.reauthenticate(cred)
-                                    .addOnSuccessListener {
-                                        user.updatePassword(newPwd)
-                                            .addOnSuccessListener {
-                                                Toast.makeText(context, sPwdChanged, Toast.LENGTH_SHORT).show()
-                                                showResetDialog = false
-                                                oldPwd = ""; newPwd = ""; confirmPwd = ""; err = null
-                                            }
-                                            .addOnFailureListener { e -> err = e.localizedMessage }
-                                    }
-                                    .addOnFailureListener { err = sErrCurrentIncorrect }
-                            }
+                        err = when {
+                            oldPwd.isBlank() ->
+                                sErrEnterCurrent
+                            newPwd.length < 6 ->
+                                sErrPwdLength
+                            !newPwd.any { it.isUpperCase() } ||
+                                    !newPwd.any { it.isLowerCase() } ||
+                                    !newPwd.any { !it.isLetterOrDigit() } ->
+                                sErrPwdComplex
+                            newPwd != confirmPwd ->
+                                sErrPwdMatch
+                            user == null ->
+                                sErrNoUser
+                            else -> null
+                        }
+                        if (err == null) {
+                            val cred = EmailAuthProvider.getCredential(email, oldPwd)
+                            user!!.reauthenticate(cred)
+                                .addOnSuccessListener {
+                                    user.updatePassword(newPwd)
+                                        .addOnSuccessListener {
+                                            Toast.makeText(context, sPwdChanged, Toast.LENGTH_SHORT).show()
+                                            showResetDialog = false
+                                            oldPwd = ""; newPwd = ""; confirmPwd = ""; err = null
+                                        }
+                                        .addOnFailureListener { e -> err = e.localizedMessage }
+                                }
+                                .addOnFailureListener { err = sErrCurrentIncorrect }
                         }
                     }) {
                         Text(sApply, color = colors.primary)
