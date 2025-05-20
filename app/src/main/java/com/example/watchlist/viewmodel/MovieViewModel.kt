@@ -68,7 +68,8 @@ class MovieViewModel : ViewModel() {
                 val response = if (filterQuery.isNullOrBlank()) {
                     RetrofitClient.api.discoverMovies(
                         apiKey = API_KEY,
-                        genreIds = filterGenres?.joinToString(",") { genreMap[it] ?: "" },
+                        genreIds = filterGenres
+                            ?.joinToString("|") { genreMap[it] ?: "" },
                         releaseDateGte = filterStartYear?.let { "$it-01-01" },
                         releaseDateLte = filterEndYear?.let { "$it-12-31" },
                         voteAverageGte = filterMinVote,
@@ -90,8 +91,8 @@ class MovieViewModel : ViewModel() {
                 if (selectedSort == "By Release Date") {
                     list = list.sortedByDescending {
                         runCatching {
-                            SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.releaseDate)
-                                ?: Date(0)
+                            SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                                .parse(it.releaseDate) ?: Date(0)
                         }.getOrNull() ?: Date(0)
                     }
                 }
