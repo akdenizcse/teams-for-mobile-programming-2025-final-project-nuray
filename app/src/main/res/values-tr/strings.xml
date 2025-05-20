@@ -1,0 +1,92 @@
+<resources>
+    <!-- App -->
+    <string name="app_name">WatchList</string>
+
+    <!-- Common -->
+    <string name="cd_search">Ara</string>
+    <string name="cd_filter">Filtrele</string>
+    <string name="cd_sort">Sırala</string>
+    <string name="cd_previous">Önceki sayfa</string>
+    <string name="cd_next">Sonraki sayfa</string>
+    <string name="cd_favorite">Favorileri değiştir</string>
+    <string name="cd_watchlist">İzleme listesine ekle</string>
+
+    <!-- HomeScreen -->
+    <string name="home_title">Ana Sayfa</string>
+    <string name="hint_search">Aramak için yaz…</string>
+    <string name="sort_default">Varsayılan</string>
+    <string name="sort_by_rating">IMDb Puanına Göre</string>
+    <string name="sort_by_release">Çıkış Tarihine Göre</string>
+    <string name="label_genre">Tür</string>
+    <string name="year_range_label">Yıl Aralığı</string>
+    <string name="rating_range_label">Puan Aralığı</string>
+    <string name="from_hint">Başlangıç (YYYY)</string>
+    <string name="to_hint">Bitiş (YYYY)</string>
+    <string name="min_hint">Min</string>
+    <string name="max_hint">Max</string>
+    <string name="page_label">%1$d / %2$d</string>
+    <string name="release_label">Yayın: %1$s</string>
+    <string name="imdb_label">IMDb: %1$.1f</string>
+
+
+    <string name="profile_title">Profil</string>
+    <string name="label_about">Hakkında</string>
+    <string name="change_password">Şifre Değiştir</string>
+    <string name="preferred_genres">Tercih Edilen Türler</string>
+    <string name="no_genres_selected">Seçili tür yok.</string>
+    <string name="logout">Çıkış Yap</string>
+    <string name="confirm_logout">Çıkışı Onayla</string>
+    <string name="yes">Evet</string>
+    <string name="no">Hayır</string>
+    <string name="edit_name">Adı Düzenle</string>
+    <string name="first_name_label">Ad</string>
+    <string name="last_name_label">Soyad</string>
+    <string name="save">Kaydet</string>
+    <string name="cancel">İptal</string>
+    <string name="apply">Uygula</string>
+    <string name="current_password">Mevcut Şifre</string>
+    <string name="new_password">Yeni Şifre</string>
+    <string name="confirm_new_password">Yeni Şifreyi Onayla</string>
+    <string name="name_updated">İsim güncellendi</string>
+    <string name="pwd_changed">Şifre değiştirildi</string>
+    <string name="err_enter_current">Lütfen mevcut şifreyi girin</string>
+    <string name="err_pwd_length">Şifre en az 6 karakter olmalı</string>
+    <string name="err_pwd_match">Şifreler eşleşmiyor</string>
+    <string name="err_no_user">Kullanıcı girişi yok</string>
+    <string name="err_current_incorrect">Mevcut şifre yanlış</string>
+
+    <!-- Genres -->
+    <string name="genre_action">Aksiyon</string>
+    <string name="genre_drama">Dram</string>
+    <string name="genre_comedy">Komedi</string>
+    <string name="genre_scifi">Bilim Kurgu</string>
+    <!-- SignUpScreen -->
+
+    <string name="email_label">E-posta</string>
+    <string name="email_placeholder">senin@alanadi.com</string>
+    <string name="password_label">Şifre</string>
+    <string name="password_placeholder">••••••</string>
+    <string name="sign_up_button">Kayıt Ol</string>
+    <string name="already_have_account">Zaten hesabın var mı? </string>
+    <string name="login">Giriş Yap</string>
+    <string name="err_first_required">Ad gerekli</string>
+    <string name="err_last_required">Soyad gerekli</string>
+    <string name="err_invalid_email">Geçersiz e-posta</string>
+    <string name="err_pwd_strength">Şifre en az 6 karakter, büyük, küçük harf ve sembol içermeli</string>
+    <string name="msg_signed_up">Kayıt başarılı!</string>
+    <string name="login_welcome">Hoş geldiniz</string>
+    <string name="login_subtitle">Hesabınıza giriş yapın</string>
+    <!-- SettingsScreen -->
+    <string name="settings_title">Ayarlar</string>
+    <string name="dark_mode">Karanlık Mod</string>
+    <string name="language_label">Dil</string>
+    <string name="lang_english">İngilizce</string>
+    <string name="lang_turkish">Türkçe</string>
+    <string name="lang_spanish">İspanyolca</string>
+
+    <!-- BottomBar / Screen titles -->
+    <string name="favorites_title">Favoriler</string>
+    <string name="watchlist_title">İzleme Listesi</string>
+
+
+</resources>

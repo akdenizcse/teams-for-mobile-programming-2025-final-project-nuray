@@ -7,7 +7,7 @@ import androidx.compose.ui.graphics.Color
 // Light theme palette
 val LightPrimary             = Color(0xFF081F5C)
 val LightSecondary           = Color(0xFF7096D1)
-val LightTertiary            = Color(0xFFD0E3F3)
+val LightTertiary            = Color(0xFF7096D1)
 val LightBackground          = Color(0xFFEDF1F6)
 val LightSurface             = Color(0xFFF7F2EB)
 
@@ -29,6 +29,6 @@ val DarkChipBackground       = DarkSecondary
 
 val SoftPink = Color(0xFF663D44)
 
-val White = Color(0xFFFFFFFF)
+
 
 

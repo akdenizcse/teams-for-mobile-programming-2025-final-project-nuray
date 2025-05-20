@@ -1,4 +1,3 @@
-// SettingsScreen.kt
 package com.example.watchlist
 
 import androidx.compose.foundation.background
@@ -11,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 
@@ -18,27 +18,31 @@ import androidx.navigation.NavHostController
 @Composable
 fun SettingsScreen(
     navController: NavHostController,
-    isDarkMode: Boolean = true,
-    currentLanguage: String = "English",
-    onThemeToggle: (Boolean) -> Unit = {},
-    onLanguageSelected: (String) -> Unit = {}
+    isDarkMode: Boolean,
+    currentLanguageTag: String,
+    onThemeToggle: (Boolean) -> Unit,
+    onLanguageSelected: (String) -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
-    val languages = listOf("English", "Turkish", "Spanish")
+
+
+    val languages = listOf(
+        "en" to stringResource(R.string.lang_english),
+        "tr" to stringResource(R.string.lang_turkish),
+        "es" to stringResource(R.string.lang_spanish)
+    )
     var expanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Settings", color = colors.onBackground) },
+                title = { Text(stringResource(R.string.settings_title), color = colors.onBackground) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = null, tint = colors.onBackground)
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = colors.background
-                )
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = colors.background)
             )
         },
         containerColor = colors.background
@@ -64,7 +68,7 @@ fun SettingsScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Dark Mode",
+                        text = stringResource(R.string.dark_mode),
                         modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.bodyLarge,
                         color = colors.onSurface
@@ -73,15 +77,14 @@ fun SettingsScreen(
                         checked = isDarkMode,
                         onCheckedChange = onThemeToggle,
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = colors.primary,
+                            checkedThumbColor   = colors.primary,
                             uncheckedThumbColor = colors.onSurfaceVariant,
-                            checkedTrackColor = colors.primary.copy(alpha = 0.4f),
+                            checkedTrackColor   = colors.primary.copy(alpha = 0.4f),
                             uncheckedTrackColor = colors.onSurfaceVariant.copy(alpha = 0.2f)
                         )
                     )
                 }
             }
-
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -98,13 +101,14 @@ fun SettingsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Language",
+                            text = stringResource(R.string.language_label),
                             modifier = Modifier.weight(1f),
                             style = MaterialTheme.typography.bodyLarge,
                             color = colors.onSurface
                         )
                         Text(
-                            text = currentLanguage,
+
+                            text = languages.first { it.first == currentLanguageTag }.second,
                             style = MaterialTheme.typography.bodyMedium,
                             color = colors.onSurfaceVariant
                         )
@@ -122,17 +126,11 @@ fun SettingsScreen(
                             .fillMaxWidth()
                             .background(colors.surface)
                     ) {
-                        languages.forEach { lang ->
+                        languages.forEach { (tag, label) ->
                             DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        lang,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = colors.onSurface
-                                    )
-                                },
+                                text = { Text(label, style = MaterialTheme.typography.bodyMedium, color = colors.onSurface) },
                                 onClick = {
-                                    onLanguageSelected(lang)
+                                    onLanguageSelected(tag)
                                     expanded = false
                                 }
                             )

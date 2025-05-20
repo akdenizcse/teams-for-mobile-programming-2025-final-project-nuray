@@ -1,4 +1,3 @@
-// MovieViewModel.kt
 package com.example.watchlist.viewmodel
 
 import androidx.compose.runtime.getValue
@@ -16,108 +15,112 @@ import java.util.*
 
 class MovieViewModel : ViewModel() {
 
-    var movies            by mutableStateOf<List<MovieItem>>(emptyList()); private set
-    var currentPage       by mutableStateOf(1);                             private set
-    var totalPages        by mutableStateOf(1);                             private set
+    var movies by mutableStateOf<List<MovieItem>>(emptyList()); private set
+    var currentPage by mutableStateOf(1); private set
+    var totalPages by mutableStateOf(1); private set
+    var selectedSort by mutableStateOf<String>("Default")
 
-    var selectedGenre     by mutableStateOf<String?>(null)
-    var selectedStartYear by mutableStateOf<String?>(null)
-    var selectedEndYear   by mutableStateOf<String?>(null)
-    var selectedMinRating by mutableStateOf<Double?>(null)
-    var selectedMaxRating by mutableStateOf<Double?>(null)
-    var selectedSort      by mutableStateOf<String?>("Default")
+    private var filterQuery: String? = null
+    private var filterGenres: Set<String>? = null
+    private var filterStartYear: String? = null
+    private var filterEndYear: String? = null
+    private var filterMinVote: Double? = null
+    private var filterMaxVote: Double? = null
 
     private val auth = FirebaseAuth.getInstance()
-    private val db   = FirebaseFirestore.getInstance()
-
-    private var favIdsState   by mutableStateOf<Set<String>>(emptySet())
+    private val db = FirebaseFirestore.getInstance()
+    private var favIdsState by mutableStateOf<Set<String>>(emptySet())
     private var watchIdsState by mutableStateOf<Set<String>>(emptySet())
 
-    val favIds   get() = favIdsState
-    val watchIds get() = watchIdsState
-
-    private val sortMap = mapOf(
-        "Default"           to null,
-        "By IMDb Rating"    to "vote_average.desc",
-        "By Release Date"   to "primary_release_date.desc"
-    )
-
-    private val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-
     init {
-        loadPage(1, null)
         subscribeToFavorites()
         subscribeToWatchlist()
     }
 
     fun applyFilters(
-        query: String?,
-        genre: String? = null,
-        yearFrom: String? = null,
-        yearTo: String? = null,
-        ratingMin: Double? = null,
-        ratingMax: Double? = null
+        query: String? = null,
+        genres: Set<String>? = null,
+        startYear: String? = null,
+        endYear: String? = null,
+        minVote: Double? = null,
+        maxVote: Double? = null
     ) {
-        selectedGenre     = genre
-        selectedStartYear = yearFrom
-        selectedEndYear   = yearTo
-        selectedMinRating = ratingMin
-        selectedMaxRating = ratingMax
-        currentPage       = 1
-        loadPage(1, query)
+        filterQuery = query
+        filterGenres = genres
+        filterStartYear = startYear
+        filterEndYear = endYear
+        filterMinVote = minVote
+        filterMaxVote = maxVote
+        loadPage(1)
     }
 
-    private fun loadPage(page: Int, query: String?) {
+    fun nextPage() {
+        if (currentPage < totalPages) loadPage(currentPage + 1)
+    }
+
+    fun prevPage() {
+        if (currentPage > 1) loadPage(currentPage - 1)
+    }
+
+    private fun loadPage(page: Int) {
         viewModelScope.launch {
             try {
-                val resp = if (query.isNullOrBlank()) {
+                val response = if (filterQuery.isNullOrBlank()) {
                     RetrofitClient.api.discoverMovies(
-                        apiKey           = API_KEY,
-                        genreIds         = selectedGenre?.let { genreMap[it] },
-                        releaseDateGte   = selectedStartYear?.let { "$it-01-01" },
-                        releaseDateLte   = selectedEndYear?.let { "$it-12-31" },
-                        voteAverageGte   = selectedMinRating,
-                        voteAverageLte   = selectedMaxRating,
-                        sortBy           = sortMap[selectedSort],
-                        page             = page
+                        apiKey = API_KEY,
+                        genreIds = filterGenres?.joinToString(",") { genreMap[it] ?: "" },
+                        releaseDateGte = filterStartYear?.let { "$it-01-01" },
+                        releaseDateLte = filterEndYear?.let { "$it-12-31" },
+                        voteAverageGte = filterMinVote,
+                        voteAverageLte = filterMaxVote,
+                        sortBy = sortMap[selectedSort],
+                        page = page
                     )
                 } else {
                     RetrofitClient.api.searchMovies(
                         apiKey = API_KEY,
-                        query  = query,
-                        page   = page
+                        query = filterQuery!!,
+                        page = page
                     )
                 }
-
-                var list = resp.results
-
-
-                when (selectedSort) {
-                    "By IMDb Rating" ->
-                        list = list.sortedByDescending { it.rating }
-                    "By Release Date" ->
-                        list = list.sortedByDescending {
-                            runCatching {
-                                dateFormatter.parse(it.releaseDate) ?: Date(0)
-                            }.getOrNull() ?: Date(0)
-                        }
+                var list = response.results
+                if (selectedSort == "By IMDb Rating") {
+                    list = list.sortedByDescending { it.rating }
                 }
+                if (selectedSort == "By Release Date") {
+                    list = list.sortedByDescending {
+                        runCatching {
+                            SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.releaseDate)
+                                ?: Date(0)
+                        }.getOrNull() ?: Date(0)
+                    }
+                }
+                movies = list
+                currentPage = response.page
+                totalPages = response.total_pages
+            } catch (_: Exception) { }
+        }
+    }
 
-                movies      = list
-                currentPage = resp.page
-                totalPages  = resp.total_pages
-            } catch (_: Exception) {
+    fun isMovieFavorite(movieId: String) = favIdsState.contains(movieId)
+    fun isMovieInWatchlist(movieId: String) = watchIdsState.contains(movieId)
 
+    fun toggleFavorite(movieId: String, makeFav: Boolean) {
+        auth.currentUser?.uid?.let { uid ->
+            val ref = db.collection("users").document(uid).collection("favorites").document(movieId)
+            viewModelScope.launch {
+                if (makeFav) ref.set(mapOf("movieId" to movieId)) else ref.delete()
             }
         }
     }
 
-    fun nextPage() {
-        if (currentPage < totalPages) loadPage(currentPage + 1, null)
-    }
-
-    fun prevPage() {
-        if (currentPage > 1) loadPage(currentPage - 1, null)
+    fun toggleWatchlist(movieId: String, add: Boolean) {
+        auth.currentUser?.uid?.let { uid ->
+            val ref = db.collection("users").document(uid).collection("watchlist").document(movieId)
+            viewModelScope.launch {
+                if (add) ref.set(mapOf("movieId" to movieId)) else ref.delete()
+            }
+        }
     }
 
     private fun subscribeToFavorites() {
@@ -138,34 +141,18 @@ class MovieViewModel : ViewModel() {
         }
     }
 
-    fun isMovieFavorite(movieId: String)    = favIds.contains(movieId)
-    fun isMovieInWatchlist(movieId: String) = watchIds.contains(movieId)
-
-    fun toggleFavorite(movieId: String, makeFav: Boolean) {
-        auth.currentUser?.uid?.let { uid ->
-            val ref = db.collection("users").document(uid).collection("favorites").document(movieId)
-            viewModelScope.launch {
-                if (makeFav) ref.set(mapOf("movieId" to movieId)) else ref.delete()
-            }
-        }
-    }
-
-    fun toggleWatchlist(movieId: String, add: Boolean) {
-        auth.currentUser?.uid?.let { uid ->
-            val ref = db.collection("users").document(uid).collection("watchlist").document(movieId)
-            viewModelScope.launch {
-                if (add) ref.set(mapOf("movieId" to movieId)) else ref.delete()
-            }
-        }
-    }
-
-    private companion object {
+    companion object {
         const val API_KEY = "8a0e3d26a508195b8b070d519d3ad671"
         val genreMap = mapOf(
             "Action" to "28",
-            "Drama"  to "18",
+            "Drama" to "18",
             "Comedy" to "35",
             "Sci-Fi" to "878"
+        )
+        val sortMap = mapOf(
+            "Default" to null,
+            "By IMDb Rating" to "vote_average.desc",
+            "By Release Date" to "primary_release_date.desc"
         )
     }
 }
