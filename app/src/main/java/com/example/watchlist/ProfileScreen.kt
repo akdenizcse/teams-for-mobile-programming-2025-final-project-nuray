@@ -1,6 +1,7 @@
 package com.example.watchlist
 
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,8 +12,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.LockReset
@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -41,6 +42,8 @@ fun ProfileScreen(
     vm: ProfileViewModel = viewModel()
 ) {
     val context = LocalContext.current
+    val colors = MaterialTheme.colorScheme
+
     val sProfileTitle       = stringResource(R.string.profile_title)
     val sBackDesc           = stringResource(R.string.cd_previous)
     val sAbout              = stringResource(R.string.label_about)
@@ -68,24 +71,39 @@ fun ProfileScreen(
     val sErrPwdMatch        = stringResource(R.string.err_pwd_match)
     val sErrNoUser          = stringResource(R.string.err_no_user)
     val sErrCurrentIncorrect= stringResource(R.string.err_current_incorrect)
+    val sSelectAvatar       = stringResource(R.string.select_avatar)
+    val sAvatarUpdated      = stringResource(R.string.avatar_updated)
 
-    val colors = MaterialTheme.colorScheme
-
-    var firstName        by remember { mutableStateOf("") }
-    var lastName         by remember { mutableStateOf("") }
-    val user             = FirebaseAuth.getInstance().currentUser
-    val email            = user?.email.orEmpty()
-    var showResetDialog  by remember { mutableStateOf(false) }
+    // UI state
+    var showAvatarDialog by remember { mutableStateOf(false) }
     var showEditDialog   by remember { mutableStateOf(false) }
+    var showResetDialog  by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
-    var editFirst        by remember { mutableStateOf("") }
-    var editLast         by remember { mutableStateOf("") }
-    var oldPwd           by remember { mutableStateOf("") }
-    var newPwd           by remember { mutableStateOf("") }
-    var confirmPwd       by remember { mutableStateOf("") }
-    var err              by remember { mutableStateOf<String?>(null) }
 
+    var editFirst  by remember { mutableStateOf("") }
+    var editLast   by remember { mutableStateOf("") }
+    var oldPwd     by remember { mutableStateOf("") }
+    var newPwd     by remember { mutableStateOf("") }
+    var confirmPwd by remember { mutableStateOf("") }
+    var err        by remember { mutableStateOf<String?>(null) }
+
+    val user   = FirebaseAuth.getInstance().currentUser
+    val email  = user?.email.orEmpty()
     val genres = vm.watchlistGenres.toList()
+
+
+    val avatars = listOf(
+        R.drawable.avatar2,
+        R.drawable.avatar1,
+        R.drawable.avatar3,
+        R.drawable.avatar4,
+        R.drawable.avatar5,
+        R.drawable.avatar6,
+        R.drawable.avatar7,
+        R.drawable.avatar8,
+        R.drawable.avatar9,
+    )
+
 
     LaunchedEffect(Unit) {
         user?.uid?.let { uid ->
@@ -94,8 +112,8 @@ fun ProfileScreen(
                 .document(uid)
                 .get()
                 .addOnSuccessListener { doc ->
-                    firstName = doc.getString("firstName").orEmpty()
-                    lastName  = doc.getString("lastName").orEmpty()
+                    editFirst = doc.getString("firstName").orEmpty()
+                    editLast  = doc.getString("lastName").orEmpty()
                 }
         }
     }
@@ -107,7 +125,7 @@ fun ProfileScreen(
                 title = { Text(sProfileTitle, color = colors.onBackground) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = sBackDesc, tint = colors.primary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = sBackDesc, tint = colors.primary)
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = colors.background)
@@ -117,34 +135,46 @@ fun ProfileScreen(
         Column(
             Modifier
                 .fillMaxSize()
-                .background(colors.background)
                 .verticalScroll(rememberScrollState())
                 .padding(padding)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
+
             Box(
                 Modifier
                     .size(100.dp)
                     .align(Alignment.CenterHorizontally)
                     .clip(CircleShape)
-                    .background(colors.secondaryContainer),
+                    .background(colors.secondaryContainer)
+                    .clickable { showAvatarDialog = true },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Filled.AccountCircle, contentDescription = sProfileTitle, tint = colors.onSecondaryContainer, modifier = Modifier.size(64.dp))
+                val resId = vm.avatarUrl?.toIntOrNull() ?: avatars.first()
+                Image(
+                    painter = painterResource(id = resId),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize().clip(CircleShape)
+                )
+                Icon(
+                    imageVector = Icons.Filled.Edit,
+                    contentDescription = null,
+                    tint = colors.primary,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .size(24.dp)
+                        .offset((-4).dp, (-4).dp)
+                )
             }
+
 
             Card(colors = CardDefaults.cardColors(containerColor = colors.surface), modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(sAbout, fontSize = 18.sp, color = colors.onSurface, fontWeight = FontWeight.Bold)
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("$firstName $lastName", color = colors.onSurface, fontSize = 16.sp)
+                        Text("$editFirst $editLast", color = colors.onSurface, fontSize = 16.sp)
                         Spacer(Modifier.width(8.dp))
-                        IconButton(onClick = {
-                            editFirst = firstName
-                            editLast  = lastName
-                            showEditDialog = true
-                        }) {
+                        IconButton(onClick = { showEditDialog = true }) {
                             Icon(Icons.Filled.Edit, contentDescription = sEditName, tint = colors.primary)
                         }
                     }
@@ -165,6 +195,7 @@ fun ProfileScreen(
                 }
             }
 
+
             Card(colors = CardDefaults.cardColors(containerColor = colors.surface), modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(sPreferredGenres, fontSize = 18.sp, color = colors.onSurface, fontWeight = FontWeight.Bold)
@@ -177,7 +208,7 @@ fun ProfileScreen(
                                     selected = true,
                                     onClick  = { },
                                     label    = { Text(g, color = colors.onPrimary) },
-                                    colors   = FilterChipDefaults.filterChipColors(
+                                    colors = FilterChipDefaults.filterChipColors(
                                         selectedContainerColor = colors.primary,
                                         selectedLabelColor     = colors.onPrimary,
                                         containerColor         = colors.surfaceVariant,
@@ -191,6 +222,7 @@ fun ProfileScreen(
                 }
             }
 
+
             Button(
                 onClick = { showLogoutDialog = true },
                 modifier = Modifier.fillMaxWidth(),
@@ -203,26 +235,37 @@ fun ProfileScreen(
             }
         }
 
-        if (showLogoutDialog) {
+
+        if (showAvatarDialog) {
             AlertDialog(
-                onDismissRequest = { showLogoutDialog = false },
-                title            = { Text(sConfirmLogout, color = colors.onBackground) },
-                text             = { Text(sConfirmLogout, color = colors.onBackground) },
-                confirmButton    = {
-                    TextButton(onClick = {
-                        FirebaseAuth.getInstance().signOut()
-                        Toast.makeText(context, sLogout, Toast.LENGTH_SHORT).show()
-                        navController.navigate("login") { popUpTo("home") { inclusive = true } }
-                    }) {
-                        Text(sYes, fontSize = 18.sp, color = colors.primary)
+                onDismissRequest = { showAvatarDialog = false },
+                title   = { Text(sSelectAvatar, color = colors.onBackground) },
+                text    = {
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        items(avatars) { id ->
+                            Image(
+                                painter = painterResource(id = id),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .clip(CircleShape)
+                                    .clickable {
+                                        vm.updateAvatar(id.toString()) {
+                                            Toast.makeText(context, sAvatarUpdated, Toast.LENGTH_SHORT).show()
+                                            showAvatarDialog = false
+                                        }
+                                    }
+                            )
+                        }
                     }
                 },
-                dismissButton    = {
-                    TextButton(onClick = { showLogoutDialog = false }) {
-                        Text(sNo, fontSize = 18.sp, color = colors.primary)
+                confirmButton = {},
+                dismissButton = {
+                    TextButton(onClick = { showAvatarDialog = false }) {
+                        Text(sCancel, color = colors.primary)
                     }
                 },
-                containerColor   = colors.surface
+                containerColor = colors.surface
             )
         }
 
@@ -264,12 +307,9 @@ fun ProfileScreen(
                                 .document(uid)
                                 .update(mapOf("firstName" to editFirst, "lastName" to editLast))
                                 .addOnSuccessListener {
-                                    firstName = editFirst
-                                    lastName  = editLast
-                                    showEditDialog = false
                                     Toast.makeText(context, sNameUpdated, Toast.LENGTH_SHORT).show()
+                                    showEditDialog = false
                                 }
-                                .addOnFailureListener { e -> Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show() }
                         }
                     }) {
                         Text(sSave, color = colors.primary)
@@ -283,6 +323,7 @@ fun ProfileScreen(
                 containerColor   = colors.surface
             )
         }
+
 
         if (showResetDialog) {
             AlertDialog(
@@ -335,18 +376,13 @@ fun ProfileScreen(
                 confirmButton    = {
                     TextButton(onClick = {
                         err = when {
-                            oldPwd.isBlank() ->
-                                sErrEnterCurrent
-                            newPwd.length < 6 ->
-                                sErrPwdLength
+                            oldPwd.isBlank() -> sErrEnterCurrent
+                            newPwd.length < 6 -> sErrPwdLength
                             !newPwd.any { it.isUpperCase() } ||
                                     !newPwd.any { it.isLowerCase() } ||
-                                    !newPwd.any { !it.isLetterOrDigit() } ->
-                                sErrPwdComplex
-                            newPwd != confirmPwd ->
-                                sErrPwdMatch
-                            user == null ->
-                                sErrNoUser
+                                    !newPwd.any { !it.isLetterOrDigit() } -> sErrPwdComplex
+                            newPwd != confirmPwd -> sErrPwdMatch
+                            user == null -> sErrNoUser
                             else -> null
                         }
                         if (err == null) {
@@ -359,7 +395,6 @@ fun ProfileScreen(
                                             showResetDialog = false
                                             oldPwd = ""; newPwd = ""; confirmPwd = ""; err = null
                                         }
-                                        .addOnFailureListener { e -> err = e.localizedMessage }
                                 }
                                 .addOnFailureListener { err = sErrCurrentIncorrect }
                         }
@@ -373,6 +408,30 @@ fun ProfileScreen(
                         oldPwd = ""; newPwd = ""; confirmPwd = ""; err = null
                     }) {
                         Text(sCancel, color = colors.primary)
+                    }
+                },
+                containerColor   = colors.surface
+            )
+        }
+
+
+        if (showLogoutDialog) {
+            AlertDialog(
+                onDismissRequest = { showLogoutDialog = false },
+                title            = { Text(sConfirmLogout, color = colors.onBackground) },
+                text             = { Text(sConfirmLogout, color = colors.onBackground) },
+                confirmButton    = {
+                    TextButton(onClick = {
+                        FirebaseAuth.getInstance().signOut()
+                        Toast.makeText(context, sLogout, Toast.LENGTH_SHORT).show()
+                        navController.navigate("login") { popUpTo("home") { inclusive = true } }
+                    }) {
+                        Text(sYes, color = colors.primary)
+                    }
+                },
+                dismissButton    = {
+                    TextButton(onClick = { showLogoutDialog = false }) {
+                        Text(sNo, color = colors.primary)
                     }
                 },
                 containerColor   = colors.surface

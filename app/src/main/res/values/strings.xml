@@ -88,6 +88,7 @@
     <string name="favorites_title">Favorites</string>
     <string name="watchlist_title">Watchlist</string>
 
-
+    <string name="select_avatar">Avatarı seçin</string>
+    <string name="avatar_updated">Avatar güncellendi</string>
 
 </resources>
