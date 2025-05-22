@@ -1,0 +1,93 @@
+<resources>
+    <!-- App -->
+    <string name="app_name">WatchList</string>
+
+    <!-- Common -->
+    <string name="cd_search">Buscar</string>
+    <string name="cd_filter">Filtrar</string>
+    <string name="cd_sort">Ordenar</string>
+    <string name="cd_previous">Página anterior</string>
+    <string name="cd_next">Página siguiente</string>
+    <string name="cd_favorite">Alternar favorito</string>
+    <string name="cd_watchlist">Alternar lista</string>
+
+    <!-- HomeScreen -->
+    <string name="home_title">Inicio</string>
+    <string name="hint_search">Escribe para buscar…</string>
+    <string name="sort_default">Predeterminado</string>
+    <string name="sort_by_rating">Por calificación IMDb</string>
+    <string name="sort_by_release">Por fecha de lanzamiento</string>
+    <string name="label_genre">Género</string>
+    <string name="year_range_label">Rango de años</string>
+    <string name="rating_range_label">Rango de puntuación</string>
+    <string name="from_hint">Desde (AAAA)</string>
+    <string name="to_hint">Hasta (AAAA)</string>
+    <string name="min_hint">Mín</string>
+    <string name="max_hint">Máx</string>
+    <string name="page_label">Página %1$d de %2$d</string>
+    <string name="release_label">Estreno: %1$s</string>
+    <string name="imdb_label">IMDb: %1$.1f</string>
+
+    <string name="profile_title">Perfil</string>
+    <string name="label_about">Acerca de</string>
+    <string name="change_password">Cambiar contraseña</string>
+    <string name="preferred_genres">Géneros preferidos</string>
+    <string name="no_genres_selected">No hay géneros seleccionados.</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="confirm_logout">Confirmar cierre</string>
+    <string name="yes">Sí</string>
+    <string name="no">No</string>
+    <string name="edit_name">Editar nombre</string>
+    <string name="first_name_label">Nombre</string>
+    <string name="last_name_label">Apellido</string>
+    <string name="save">Guardar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="apply">Aplicar</string>
+    <string name="current_password">Contraseña actual</string>
+    <string name="new_password">Nueva contraseña</string>
+    <string name="confirm_new_password">Confirmar nueva contraseña</string>
+    <string name="name_updated">Nombre actualizado</string>
+    <string name="pwd_changed">Contraseña cambiada</string>
+    <string name="err_enter_current">Por favor ingrese la contraseña actual</string>
+    <string name="err_pwd_length">La contraseña debe tener al menos 6 caracteres</string>
+    <string name="err_pwd_match">Las contraseñas no coinciden</string>
+    <string name="err_no_user">Ningún usuario ha iniciado sesión</string>
+    <string name="err_current_incorrect">Contraseña actual incorrecta</string>
+
+    <!-- Genres -->
+    <string name="genre_action">Acción</string>
+    <string name="genre_drama">Drama</string>
+    <string name="genre_comedy">Comedia</string>
+    <string name="genre_scifi">Ciencia ficción</string>
+    <!-- SignUpScreen -->
+
+    <string name="email_label">Correo electrónico</string>
+    <string name="email_placeholder">tudireccion@dominio.com</string>
+    <string name="password_label">Contraseña</string>
+    <string name="password_placeholder">••••••</string>
+    <string name="sign_up_button">Regístrate</string>
+    <string name="already_have_account">¿Ya tienes cuenta? </string>
+    <string name="login">Iniciar sesión</string>
+    <string name="err_first_required">Nombre requerido</string>
+    <string name="err_last_required">Apellido requerido</string>
+    <string name="err_invalid_email">Correo inválido</string>
+    <string name="err_pwd_strength">La contraseña debe tener ≥6 caracteres, mayúsculas, minúsculas y símbolo</string>
+    <string name="msg_signed_up">¡Registrado!</string>
+    <string name="login_welcome">Bienvenido</string>
+    <string name="login_subtitle">Inicia sesión en tu cuenta</string>
+
+    <!-- SettingsScreen -->
+    <string name="settings_title">Ajustes</string>
+    <string name="dark_mode">Modo oscuro</string>
+    <string name="language_label">Idioma</string>
+    <string name="lang_english">Inglés</string>
+    <string name="lang_turkish">Turco</string>
+    <string name="lang_spanish">Español</string>
+
+    <!-- BottomBar / Screen titles -->
+    <string name="favorites_title">Favoritos</string>
+    <string name="watchlist_title">Lista</string>
+
+    <string name="select_avatar">Seleccionar avatar</string>
+    <string name="avatar_updated">Avatar actualizado</string>
+</resources>
